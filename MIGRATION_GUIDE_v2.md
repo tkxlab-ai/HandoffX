@@ -53,8 +53,9 @@ v2 拆四件套后：
 | 场景 | 行为 |
 |---|---|
 | 交互式 TTY | 显示 `migrate-to-v2.sh --dry-run` 预览 → 提示 `Apply migration now? (y/N)` |
-| `HANDOFF_TIDY_AUTO_MIGRATE=1` 非交互 | 直接 apply（CI / agent 用） |
-| 非交互 + 无 env 变量 | 警告 + exit 0（不静默迁移） |
+| **`--apply` CLI flag**（v2.1.0+，CI / agent 推荐）| 直接 apply；`bash tidy-handoff.sh --apply HANDOFF.md`——位置自由（GNU 风格） |
+| `HANDOFF_TIDY_AUTO_MIGRATE=1` env var | 直接 apply（v2.0.0 旧路径；v2.1.0 保留向后兼容） |
+| 非交互 + 都没设 | 警告 + exit 0（不静默迁移，防误删） |
 
 ### 2.3 应用（atomic）
 

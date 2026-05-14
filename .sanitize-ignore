@@ -11,3 +11,14 @@ TEST-SCENARIOS.md
 # Internal planning documents capture dev-time absolute paths; not user-facing artifacts.
 docs/superpowers/plans/*
 docs/superpowers/specs/*
+
+# v2 multi-file layout (v2.1.0+) — Dev Log entries, Decisions, transfer guides,
+# and the v1 backup narrate dev-time work; they intentionally embed absolute
+# paths and machine-specific examples as part of the historical record, not
+# deployable config. Closes the K4 release-sanitize manual mv-files workaround.
+Handoff_Logs/*
+Handoff_Decisions/*
+GOTCHAS.md
+HANDOFF.md.pre-v2-backup
+NEXT_SESSION_NOTES.md
+Mac Project Transfer.md

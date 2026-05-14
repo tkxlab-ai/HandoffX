@@ -2,6 +2,45 @@
 
 记录各版本的关键变化。最新版本在最上面。
 
+## v2.1.0 — 2026-05-11
+
+**Theme: UX polish — let users write Dev Logs more naturally + ship a single-command postflight.**
+
+### Why
+
+v2.0.0 强制 Dev Log body 字段用中文 `**触发**`/`**改动**`/`**验证**`/`**关联**`。手写时易 typo（`**Tigger**:` 等），英文母语用户也不顺手。lint 直接 fail，体感僵硬。
+
+K5 真机验证也暴露了"Chinese-only enforcement"和实际多语场景的张力——本质上 4 个字段名是语义标识，没必要绑定单一语言。
+
+### Key changes
+
+- **`scripts/handoff-lint.sh` + 双副本**：Dev Log body 字段接受同义词字典——`触发≡Trigger` / `改动≡Changes` / `验证≡Verification` / `关联≡Related`。错误消息双语提示（"missing body field: **触发** (or **Trigger**)"），自我文档化
+- **`scripts/tidy-handoff.sh` + 双副本**：tidy 的 awk 缺字段检测同步同义词字典，与 lint 在锁步状态——避免"lint 通过但 tidy 报缺字段"的矛盾 UX
+- **`skills/handoff/references/handoff-write.md`**：新增字段别名说明段落（让 AI agents 知道两种写法都合法）
+- **`skills/handoff/references/handoff-tidy.md`**：补 stub 时维持原条目语言风格（避免 split-personality）
+- **`tests/test_handoff_lint.sh`**：+ 3 RED→GREEN 测试（C-v2-en-aliases-ok / C-v2-mixed-aliases-ok / C-v2-typo-rejected）；总计 43/0
+- **`scripts/tidy-handoff.sh` + 双副本**：新增 `--apply` CLI flag（GNU 风格，任意位置）作为非交互 migrate 的 first-class 触发点；旧 `HANDOFF_TIDY_AUTO_MIGRATE=1` env var 保留 100% 向后兼容；warning 消息和 `--help` 同步更新——CLI 自我文档化
+- **`tests/test_tidy_handoff.sh`**：+ Case 17a-e（flag/file 位置、ENV+flag 共存、help/warning 自文档化）；总计 53/0
+- **`MIGRATION_GUIDE_v2.md` / `skills/handoff/references/handoff-tidy.md` / `Mac Project Transfer.md`**：四份用户文档同步说明 `--apply` 为推荐路径；关闭原"`HANDOFF_TIDY_AUTO_MIGRATE` 没出现在用户文档"的 backlog 项
+- **`scripts/handoff-postflight.sh` + 双副本（新增脚本）**：一行聚合 5 个后置检查（scan / validate / lint / rotation / archive），统一 PASS/FAIL 汇总 + GNU 风格 `--quiet` flag + `--help` 自我文档化。**交付实为 5-check 超集**（原 backlog 写 4 连；新增的 handoff-lint 是 v2 新检查，聚合时一并纳入）。命名采用 `handoff-` 前缀符合项目 hyphenated 惯例
+- **`tests/test_handoff_postflight.sh`**：+ 8 test groups / 20 assertions（exists+x / -h 含 5 检查名 / missing-file 退出 2 / 全过 / `--quiet` 仅出汇总 / 位置自由 / unknown flag 退出 2 / 失败 case 退出 1 + 报名）；TRUE TDD（19 RED → 20 GREEN）
+- **5 处用户文档同步**：`SKILL.md` §写入 §整理 / `handoff-write.md` 后置 5 连节 / `handoff-tidy.md` 步骤 3 / `Mac Project Transfer.md` §7.5 — 都改为 `handoff-postflight.sh` 推荐 + 5 脚本 fallback 调试入口
+- **`.sanitize-ignore` 加 v2 layout 豁免**：v2 多文件布局的 6 类文件（`Handoff_Logs/*`、`Handoff_Decisions/*`、`GOTCHAS.md`、`HANDOFF.md.pre-v2-backup`、`NEXT_SESSION_NOTES.md`、`Mac Project Transfer.md`）有意嵌入 dev-time 绝对路径作为历史/迁移叙事，加入项目级 `.sanitize-ignore` 白名单，干掉 K4 release 时手动 mv 文件的 workaround
+- **关键设计反转**：原 backlog 写"给上游 gitx-release skill 提 patch"，调研发现 gitx-release 已经有 `.sanitize-ignore` 项目级 escape hatch——**不动全局工具，加 6 行项目本地配置**（Decision 0014）。0 跨项目副作用 + 0 上游耦合
+- **`Mac Project Transfer.md` §10 收口**：加 SSH 端口 <private-port> 故障排查行（`nc -z host 22` false-negative；reachability 用 `ssh -T` 或 `nc -z host <private-port>`），§11 backlog item 关闭
+
+### Backward compatibility
+
+100% 兼容：所有现有 Dev Log 条目继续 lint 通过（`grep -qF "**触发**"` 仍匹配中文条目）。同义词是纯加性扩展，没有移除任何已接受的写法。
+
+### Not in v2.1.0（明确推延 v2.2.0）
+
+- race-free migration via flock（Codex Round 3 #8）—— race 极不可能触发，当前 `assert_dest_clear` 已把 TOCTOU 缩到 rename(2) syscall
+- race-free pointer regen via flock（Codex Round 4 #12）—— mtime check 已把 silent-loss 变成 deterministic refuse
+- 理由：v2.1.0 主题是用户感知顺手度；race 修复用户感知 = 0，放进 v2.2.0 robustness release
+
+---
+
 ## v2.0.0 — 2026-05-08
 
 **Breaking change: 多文件架构（HANDOFF.md + GOTCHAS.md + Handoff_Logs/ + Handoff_Decisions/）**

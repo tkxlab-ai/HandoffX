@@ -637,4 +637,47 @@ ec_15c=0; "$TIDY" "$SANDBOX15c/HANDOFF.md" </dev/null >/dev/null 2>&1 || ec_15c=
 [ ! -f "$SANDBOX15c/HANDOFF.md.pre-v2-backup" ] && { echo "  ✅ Case 15c: no backup file (no migration)"; PASS=$((PASS+1)); } || { echo "  ❌ Case 15c: migration ran on v2 file"; FAIL=$((FAIL+1)); }
 rm -rf "$SANDBOX15c"
 
+# ── Case 17 (v2.1.0 UX #2): --apply CLI flag replaces hidden ENV var ────────
+# UX: HANDOFF_TIDY_AUTO_MIGRATE is hidden + undocumented to a CLI-first user;
+# --apply is industry convention (git/npm/brew --yes/--force). Flag must work
+# in any position; ENV var must keep working for backward compat.
+
+# 17a: --apply (flag before file path) → migration triggered
+SANDBOX17a=$(mktemp -d)
+cp "$ROOT_DIR/tests/fixtures/handoff-v1-sample.md" "$SANDBOX17a/HANDOFF.md"
+"$TIDY" --apply "$SANDBOX17a/HANDOFF.md" </dev/null >/dev/null 2>&1
+ec_17a=$?
+assert_exit "Case 17a: --apply before file → exit 0" 0 "$ec_17a"
+grep -q '<!-- HANDOFF v2 schema -->' "$SANDBOX17a/HANDOFF.md" && { echo "  ✅ Case 17a: v2 marker added via --apply"; PASS=$((PASS+1)); } || { echo "  ❌ Case 17a: --apply did not migrate"; FAIL=$((FAIL+1)); }
+rm -rf "$SANDBOX17a"
+
+# 17b: file path before --apply (positional flexibility, GNU-style)
+SANDBOX17b=$(mktemp -d)
+cp "$ROOT_DIR/tests/fixtures/handoff-v1-sample.md" "$SANDBOX17b/HANDOFF.md"
+"$TIDY" "$SANDBOX17b/HANDOFF.md" --apply </dev/null >/dev/null 2>&1
+ec_17b=$?
+assert_exit "Case 17b: file then --apply → exit 0" 0 "$ec_17b"
+grep -q '<!-- HANDOFF v2 schema -->' "$SANDBOX17b/HANDOFF.md" && { echo "  ✅ Case 17b: positional --apply works"; PASS=$((PASS+1)); } || { echo "  ❌ Case 17b: positional --apply failed"; FAIL=$((FAIL+1)); }
+rm -rf "$SANDBOX17b"
+
+# 17c: non-interactive warning must mention --apply (CLI-first discoverability)
+SANDBOX17c=$(mktemp -d)
+cp "$ROOT_DIR/tests/fixtures/handoff-v1-sample.md" "$SANDBOX17c/HANDOFF.md"
+out_17c=$("$TIDY" "$SANDBOX17c/HANDOFF.md" </dev/null 2>&1)
+assert_contains "Case 17c: warning mentions --apply CLI flag" "$out_17c" "--apply"
+rm -rf "$SANDBOX17c"
+
+# 17d: --apply + ENV var together → no conflict (backward compat preserved)
+SANDBOX17d=$(mktemp -d)
+cp "$ROOT_DIR/tests/fixtures/handoff-v1-sample.md" "$SANDBOX17d/HANDOFF.md"
+HANDOFF_TIDY_AUTO_MIGRATE=1 "$TIDY" --apply "$SANDBOX17d/HANDOFF.md" </dev/null >/dev/null 2>&1
+ec_17d=$?
+assert_exit "Case 17d: --apply + ENV together → exit 0 (no conflict)" 0 "$ec_17d"
+grep -q '<!-- HANDOFF v2 schema -->' "$SANDBOX17d/HANDOFF.md" && { echo "  ✅ Case 17d: combined flag+env works"; PASS=$((PASS+1)); } || { echo "  ❌ Case 17d: combined failed"; FAIL=$((FAIL+1)); }
+rm -rf "$SANDBOX17d"
+
+# 17e: -h / --help output documents --apply (self-documenting)
+out_17e=$("$TIDY" -h 2>&1)
+assert_contains "Case 17e: -h mentions --apply" "$out_17e" "--apply"
+
 summary

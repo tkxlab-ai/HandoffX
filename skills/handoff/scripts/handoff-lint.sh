@@ -68,6 +68,19 @@ if grep -qF -- '<!-- HANDOFF v2 schema -->' "$FILE"; then
         printf '%s' "$raw"
     }
 
+    # v2.1.0: synonym tolerance — Dev Log body fields accept Chinese canonical
+    # or English alternates. At least one of each synonym set must appear.
+    has_any_body_field() {
+        local f="$1"; shift
+        local syn
+        for syn in "$@"; do
+            if grep -qF -- "**${syn}**" "$f"; then
+                return 0
+            fi
+        done
+        return 1
+    }
+
     lint_v2_entry() {
         local f="$1" expected_type="$2" require_body_fields="$3" expected_date_re="$4"
         local base; base=$(basename "$f")
@@ -131,10 +144,17 @@ if grep -qF -- '<!-- HANDOFF v2 schema -->' "$FILE"; then
         fi
 
         if [ "$require_body_fields" = "1" ]; then
-            local body_field
-            for body_field in 触发 改动 验证 关联; do
-                grep -qF "**${body_field}**" "$f" || { echo "❌ $base: missing body field: **${body_field}**"; local_findings=1; }
-            done
+            # v2.1.0: each semantic field accepts Chinese canonical OR English
+            # alternate. Error message lists both so users see which alternates
+            # are recognised without grepping the source.
+            has_any_body_field "$f" "触发" "Trigger" \
+                || { echo "❌ $base: missing body field: **触发** (or **Trigger**)"; local_findings=1; }
+            has_any_body_field "$f" "改动" "Changes" \
+                || { echo "❌ $base: missing body field: **改动** (or **Changes**)"; local_findings=1; }
+            has_any_body_field "$f" "验证" "Verification" \
+                || { echo "❌ $base: missing body field: **验证** (or **Verification**)"; local_findings=1; }
+            has_any_body_field "$f" "关联" "Related" \
+                || { echo "❌ $base: missing body field: **关联** (or **Related**)"; local_findings=1; }
         fi
 
         return $local_findings
@@ -229,10 +249,11 @@ in_log && /^### [0-9]{4}-[0-9]{2}-[0-9]{2}/ {
 }
 
 in_log && cur != "" {
-    if (/\*\*触发\*\*:/) seen_trigger = 1
-    if (/\*\*改动\*\*:/) seen_change = 1
-    if (/\*\*验证\*\*:/) seen_verify = 1
-    if (/\*\*关联\*\*:/) seen_link = 1
+    # v2.1.0: synonym tolerance — accept Chinese canonical OR English alternate
+    if (/\*\*触发\*\*:/ || /\*\*Trigger\*\*:/) seen_trigger = 1
+    if (/\*\*改动\*\*:/ || /\*\*Changes\*\*:/) seen_change = 1
+    if (/\*\*验证\*\*:/ || /\*\*Verification\*\*:/) seen_verify = 1
+    if (/\*\*关联\*\*:/ || /\*\*Related\*\*:/) seen_link = 1
 }
 
 END {

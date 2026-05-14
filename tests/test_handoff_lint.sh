@@ -431,6 +431,97 @@ ec=$?
 assert_exit "v2 lint: decision date drift → exit 1" 1 "$ec"
 rm -rf "$SANDBOX_DDD"
 
+# ─── v2.1.0 UX polish: synonym tolerance for body fields ──────────────────
+# Allow English aliases for the 4 Dev Log body fields so users who write in
+# English don't trip the readiness gate. Canonical (Chinese) form remains
+# the primary; English forms are co-accepted.
+#   触发 ≡ Trigger     改动 ≡ Changes
+#   验证 ≡ Verification 关联 ≡ Related
+
+# C-v2-en-aliases-ok: full English-alias body → exit 0
+SANDBOX_EN=$(mktemp -d)
+cat > "$SANDBOX_EN/HANDOFF.md" <<'EOF'
+<!-- HANDOFF v2 schema -->
+EOF
+mkdir -p "$SANDBOX_EN/Handoff_Logs" "$SANDBOX_EN/Handoff_Decisions"
+echo "# Known Gotchas" > "$SANDBOX_EN/GOTCHAS.md"
+cat > "$SANDBOX_EN/Handoff_Logs/0001-2026-05-01T1000-en.md" <<'EOF'
+---
+schema: 2
+type: dev-log
+date: 2026-05-01T10:00
+number: 0001
+title: english body fields
+---
+
+### 2026-05-01 10:00 — english body fields
+
+**Trigger**: user typed this in English
+**Changes**: added feature X
+**Verification**: tests pass
+**Related**: prior Dev Log
+EOF
+ec=0; bash "$LINT" "$SANDBOX_EN/HANDOFF.md" >/dev/null 2>&1 || ec=$?
+assert_exit "v2 lint: full English aliases → exit 0" 0 "$ec"
+rm -rf "$SANDBOX_EN"
+
+# C-v2-mixed-aliases-ok: mix 中文 + English on different fields → exit 0
+SANDBOX_MX=$(mktemp -d)
+cat > "$SANDBOX_MX/HANDOFF.md" <<'EOF'
+<!-- HANDOFF v2 schema -->
+EOF
+mkdir -p "$SANDBOX_MX/Handoff_Logs" "$SANDBOX_MX/Handoff_Decisions"
+echo "# Known Gotchas" > "$SANDBOX_MX/GOTCHAS.md"
+cat > "$SANDBOX_MX/Handoff_Logs/0001-2026-05-01T1000-mx.md" <<'EOF'
+---
+schema: 2
+type: dev-log
+date: 2026-05-01T10:00
+number: 0001
+title: mixed bilingual body
+---
+
+### 2026-05-01 10:00 — mixed bilingual body
+
+**触发**: bilingual scenario
+**Changes**: refactored Y
+**验证**: lint passes
+**Related**: handoff-lint synonym work
+EOF
+ec=0; bash "$LINT" "$SANDBOX_MX/HANDOFF.md" >/dev/null 2>&1 || ec=$?
+assert_exit "v2 lint: mixed CN/EN aliases → exit 0" 0 "$ec"
+rm -rf "$SANDBOX_MX"
+
+# C-v2-typo-rejected: misspelled alias (Tigger instead of Trigger) → exit 1
+# proves synonym tolerance is not "anything goes" — only the dict is accepted
+SANDBOX_TP=$(mktemp -d)
+cat > "$SANDBOX_TP/HANDOFF.md" <<'EOF'
+<!-- HANDOFF v2 schema -->
+EOF
+mkdir -p "$SANDBOX_TP/Handoff_Logs" "$SANDBOX_TP/Handoff_Decisions"
+echo "# Known Gotchas" > "$SANDBOX_TP/GOTCHAS.md"
+cat > "$SANDBOX_TP/Handoff_Logs/0001-2026-05-01T1000-tp.md" <<'EOF'
+---
+schema: 2
+type: dev-log
+date: 2026-05-01T10:00
+number: 0001
+title: typo in alias
+---
+
+### 2026-05-01 10:00 — typo in alias
+
+**Tigger**: typo, should be rejected
+**Changes**: bar
+**Verification**: ok
+**Related**: 无
+EOF
+out=$(bash "$LINT" "$SANDBOX_TP/HANDOFF.md" 2>&1)
+ec=$?
+assert_exit "v2 lint: typo alias (Tigger) → exit 1" 1 "$ec"
+assert_contains "v2 lint: typo report mentions canonical 触发" "$out" "触发"
+rm -rf "$SANDBOX_TP"
+
 # C-v2-decision-no-body: Decisions are NOT required to have 触发/改动/验证/关联
 # (sandbox needs all three siblings to satisfy the new "require layout" check)
 SANDBOX_DEC=$(mktemp -d)

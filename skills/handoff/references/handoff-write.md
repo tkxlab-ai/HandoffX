@@ -73,6 +73,8 @@ title: <一句话标题>
 
 填不出写 `—`，不要编造。
 
+**字段名接受英文别名**（v2.1.0+）：`**触发**`≡`**Trigger**` / `**改动**`≡`**Changes**` / `**验证**`≡`**Verification**` / `**关联**`≡`**Related**`。同一条目内可混用；handoff-lint 和 handoff-tidy 都识别两种。新条目维持原条目语言风格（避免一个文件中英文混杂）。
+
 frontmatter 之下的 `### date — title` 行 + 必填字段格式与 v1 完全一致——这是为了 grep / human-read 的兼容性。
 
 ## Decision Log 分流（per-file）
@@ -133,26 +135,35 @@ title: <决策标题>
 
 > 主文件**不再**承载 Dev Log 条目正文 / Decision 条目正文 / Gotcha 条目正文。所有内容存在 sibling 文件，主文件只负责"地图 + 指针"。
 
-## 后置四连检查
+## 后置五连检查（v2.1.0 起聚合）
 
-按顺序调用每个脚本，根据退出码判定三态（**不要假设成功**）：
+**推荐**一行调用聚合脚本（v2.1.0+）：
+
+```bash
+bash <skill-path>/scripts/handoff-postflight.sh <project-root>
+```
+
+聚合脚本按顺序跑 5 个检查 + 一行 PASS/FAIL 汇总；任一失败整体 exit 1；`--quiet` 仅出汇总（CI 用），`--help` 自我文档化。
+
+**调试需要时**可单独跑某个脚本定位问题。根据退出码判定三态：
 
 | 退出码 | 含义 | 回显 |
 |--------|------|------|
 | 0 | 脚本运行，没有发现问题 | `✅ 通过` |
-| ≥1 | 脚本运行，**发现问题**，阻断继续（scan-credentials/validate-handoff）或警告（rotation-reminder）| `⚠️ 发现...` 或 `❌ 阻断...` |
+| ≥1 | 脚本运行，**发现问题**，阻断继续（scan-credentials/validate-handoff/handoff-lint）或警告（rotation-reminder）| `⚠️ 发现...` 或 `❌ 阻断...` |
 | 127 / ENOENT | **脚本不存在** | `➖ 跳过（脚本未找到）`——不能伪装成通过 |
 
-按顺序（`<skill-path>` = 全局 skill 安装目录，详见 SKILL.md）：
+5 个底层脚本（`<skill-path>` = 全局 skill 安装目录，详见 SKILL.md）：
 
 1. `bash <skill-path>/scripts/scan-credentials.sh <project-root>` — 多文件凭证扫描：HANDOFF.md + GOTCHAS.md + Handoff_Logs/* + Handoff_Decisions/*；非 0 **硬阻断**，要求改成 `$ENV_VAR` 或 `vault://`
 2. `bash <skill-path>/scripts/validate-handoff.sh --readiness <project-root>` — v2 schema 校验：检查 v2 marker、三组 pointer stat 行存在、Handoff_Logs/ 文件 frontmatter 合法、必填字段
-3. `bash <skill-path>/scripts/rotation-reminder.sh <project-root>` — 多文件凭证轮换；发现到期时 exit 1
-4. `bash <skill-path>/scripts/archive-devlog.sh <project-root>` — v2 改为按年归档：`Handoff_Logs/<NNNN>-<2025-*>` 移到 `Handoff_Logs.archive/2025/`，主目录只保留当年与上一年。未超阈值 exit 0 幂等
+3. `bash <skill-path>/scripts/handoff-lint.sh HANDOFF.md` — v2 per-file frontmatter + body field（触发/改动/验证/关联，支持英文同义词）严格校验
+4. `bash <skill-path>/scripts/rotation-reminder.sh <project-root>` — 多文件凭证轮换；发现到期时 exit 1
+5. `bash <skill-path>/scripts/archive-devlog.sh <project-root>` — v2 改为按年归档：`Handoff_Logs/<NNNN>-<2025-*>` 移到 `Handoff_Logs.archive/2025/`，主目录只保留当年与上一年。未超阈值 exit 0 幂等
 
 ## 🧪 Experimental：记忆同步（opt-in）
 
-如果存在 `./memory/.sync-enabled` 标志文件，**在后置四连检查之后、回显之前**额外跑：
+如果存在 `./memory/.sync-enabled` 标志文件，**在后置五连检查之后、回显之前**额外跑：
 
 ```bash
 bash <skill-path>/scripts/sync-memory.sh sync

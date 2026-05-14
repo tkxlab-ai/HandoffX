@@ -305,10 +305,10 @@ handoff/
 ├── tests/                    ← 回归测试（22 套件 / 496 断言，含 v2 schema / migrate / recall contract）
 └── Release/
     ├── CHANGELOG.md          ← 版本历史
-    ├── latest → handoff-v1.2.10             ← 软链接
-    └── handoff-v1.2.10/
-        ├── handoff-v1.2.10.skill            ← 单文件分发
-        ├── handoff-v1.2.10-source.tar.gz    ← 源码包
+    ├── latest → handoff-v2.0.0             ← 软链接
+    └── handoff-v2.0.0/
+        ├── handoff-v2.0.0.skill            ← 单文件分发
+        ├── handoff-v2.0.0-source.tar.gz    ← 源码包
         └── RELEASE_NOTES.md
 ```
 

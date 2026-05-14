@@ -20,6 +20,19 @@
 
 ## 执行流程
 
+### 步骤 0：v1 layout 自动检测（如适用）
+
+tidy 启动时先检测 layout——主文件含 `<!-- HANDOFF v2 schema -->` marker 即 v2，否则按 v1 处理并提示迁移：
+
+| 场景 | 触发路径 |
+|---|---|
+| 交互式 TTY | 显示 `migrate-to-v2.sh --dry-run` 预览 → 提示 `Apply migration now? (y/N)` |
+| **非交互（CLI / CI / agent）** | **`--apply` 标志（推荐）**：`bash tidy-handoff.sh --apply HANDOFF.md` |
+| 非交互（兼容旧脚本） | `HANDOFF_TIDY_AUTO_MIGRATE=1` env var——v2.1.0 之前唯一入口，现已是 `--apply` 的别名 |
+| 非交互 + 都没设 | 警告 + exit 0，防止静默迁移丢数据 |
+
+`--apply` 可放在任何位置（GNU 风格）：`--apply HANDOFF.md` ≡ `HANDOFF.md --apply`。迁移详细机制见 `MIGRATION_GUIDE_v2.md` §2。
+
 ### 步骤 1：跑脚本做确定性整理 + 收集诊断
 
 ```bash
@@ -83,16 +96,27 @@ bash <skill-path>/scripts/tidy-handoff.sh HANDOFF.md
 
 保持字段顺序 **触发 → 改动 → 验证 → 关联**。
 
+**字段名英文别名识别**（v2.1.0+）：脚本接受 `**Trigger**`/`**Changes**`/`**Verification**`/`**Related**` 作为对应中文字段的别名。如果原条目主要用英文，补 stub 时也用英文别名（如 `**Trigger**: —`），避免把英文条目里塞中文字段名造成 split-personality。
+
 #### 2.5 Dev Log > 50 条
 
 跑 `bash <skill-path>/scripts/archive-devlog.sh HANDOFF.md` 自动归档。
 
-### 步骤 3：跑后置四连检查（与 /handoff 完全一致）
+### 步骤 3：跑后置五连检查（与 /handoff 完全一致）
+
+**推荐**（v2.1.0 起一行聚合，含 handoff-lint）：
+
+```bash
+bash <skill-path>/scripts/handoff-postflight.sh .
+```
+
+或单独跑（调试时定位具体哪一项）：
 
 1. `bash scripts/scan-credentials.sh HANDOFF.md`
 2. `bash scripts/validate-handoff.sh --readiness HANDOFF.md`
-3. `bash scripts/rotation-reminder.sh HANDOFF.md`
-4. `bash scripts/archive-devlog.sh HANDOFF.md`
+3. `bash scripts/handoff-lint.sh HANDOFF.md`
+4. `bash scripts/rotation-reminder.sh HANDOFF.md`
+5. `bash scripts/archive-devlog.sh HANDOFF.md`
 
 三态原则同 handoff-write：`✅ 通过` / `⚠️ 发现问题` / `➖ 跳过（脚本未找到）`。
 

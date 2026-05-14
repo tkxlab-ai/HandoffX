@@ -17,15 +17,37 @@
 
 set -u
 
-case "${1:-}" in
-    -h|--help)
-        echo "Usage: $0 [file]   (default: ./HANDOFF.md)"
-        echo "Exit: 0 clean or auto-fixed / 1 findings / 2 file not found"
-        exit 0
-        ;;
-esac
-
-FILE="${1:-HANDOFF.md}"
+# v2.1.0 UX #2: parse --apply CLI flag alongside positional [file] arg.
+# Flag position is free (GNU style). ENV var HANDOFF_TIDY_AUTO_MIGRATE=1
+# remains supported for backward compat with existing CI / sandbox scripts.
+APPLY_FLAG=0
+FILE=""
+for arg in "$@"; do
+    case "$arg" in
+        -h|--help)
+            echo "Usage: $0 [--apply] [file]   (default file: ./HANDOFF.md)"
+            echo
+            echo "Options:"
+            echo "  --apply   auto-apply v1 → v2 migration when v1 layout detected"
+            echo "            (CLI alternative to HANDOFF_TIDY_AUTO_MIGRATE=1 env var; preferred)"
+            echo
+            echo "Exit: 0 clean or auto-fixed / 1 findings / 2 file not found"
+            exit 0
+            ;;
+        --apply)
+            APPLY_FLAG=1
+            ;;
+        -*)
+            echo "❌ unknown flag: $arg" >&2
+            echo "   Run $0 --help for usage." >&2
+            exit 2
+            ;;
+        *)
+            [ -z "$FILE" ] && FILE="$arg"
+            ;;
+    esac
+done
+FILE="${FILE:-HANDOFF.md}"
 if [ ! -f "$FILE" ]; then
     echo "❌ file not found: $FILE" >&2
     echo "   Usage: $0 [file]   (default: ./HANDOFF.md)" >&2
@@ -85,7 +107,13 @@ if [ "$LIB_LOADED" = "1" ] && [ "${HANDOFF_TIDY_SKIP_V2_GATE:-0}" != "1" ]; then
         echo
 
         APPLY=""
-        if [ "${HANDOFF_TIDY_AUTO_MIGRATE:-0}" = "1" ]; then
+        # v2.1.0 UX #2: --apply CLI flag is the preferred non-interactive trigger;
+        # ENV var stays as a backward-compat alias (mention both so users see
+        # the CLI option exists).
+        if [ "$APPLY_FLAG" = "1" ]; then
+            APPLY="y"
+            echo "   (--apply — auto-applying migration)"
+        elif [ "${HANDOFF_TIDY_AUTO_MIGRATE:-0}" = "1" ]; then
             APPLY="y"
             echo "   (HANDOFF_TIDY_AUTO_MIGRATE=1 — auto-applying migration)"
         elif [ -t 0 ]; then
@@ -95,7 +123,7 @@ if [ "$LIB_LOADED" = "1" ] && [ "${HANDOFF_TIDY_SKIP_V2_GATE:-0}" != "1" ]; then
             read -r APPLY
         else
             echo "   non-interactive shell; tidy will NOT migrate automatically."
-            echo "   Re-run interactively, or set HANDOFF_TIDY_AUTO_MIGRATE=1 to apply."
+            echo "   Re-run interactively, pass --apply, or set HANDOFF_TIDY_AUTO_MIGRATE=1."
             exit 0
         fi
 
@@ -281,10 +309,13 @@ missing_fields_report=$(awk '
         delete seen
     }
     in_log && cur != "" {
-        if (match($0, /\*\*触发\*\*:/)) seen["触发"]=1
-        if (match($0, /\*\*改动\*\*:/)) seen["改动"]=1
-        if (match($0, /\*\*验证\*\*:/)) seen["验证"]=1
-        if (match($0, /\*\*关联\*\*:/)) seen["关联"]=1
+        # v2.1.0: synonym tolerance — accept Chinese canonical or English
+        # alternate (mirror of handoff-lint.sh awk block to keep tidy and
+        # lint enforcing the same rule)
+        if (match($0, /\*\*触发\*\*:/)   || match($0, /\*\*Trigger\*\*:/))      seen["触发"]=1
+        if (match($0, /\*\*改动\*\*:/)   || match($0, /\*\*Changes\*\*:/))      seen["改动"]=1
+        if (match($0, /\*\*验证\*\*:/)   || match($0, /\*\*Verification\*\*:/)) seen["验证"]=1
+        if (match($0, /\*\*关联\*\*:/)   || match($0, /\*\*Related\*\*:/))      seen["关联"]=1
     }
     END {
         if (cur != "") flush_entry()

@@ -60,11 +60,14 @@ description: 把项目交接写进 HANDOFF.md，供同事或未来接手
 6. **覆盖** HANDOFF.md `## 🎯 Current State`（只保留最近改动 / 验证状态 / 待办三部分）
 7. 新坑 → append 到 `GOTCHAS.md` 底部，编号 `Gotcha #N`，标签 `[build]/[runtime]/[data]/[security]/[perf]`
 8. 调 `regenerate_pointers HANDOFF.md`（来自 `lib/handoff-v2.sh`）—— 自动重写主文件三组 stat
-9. 后置四连检查（v2 directory mode；脚本不存在就跳过）：
-   - `bash <skill-path>/scripts/scan-credentials.sh <project-root>` — 多文件凭证扫描
-   - `bash <skill-path>/scripts/validate-handoff.sh --readiness <project-root>` — 结构 + v2 marker + pointer stats 校验
-   - `bash <skill-path>/scripts/rotation-reminder.sh <project-root>` — 凭证轮换
-   - `bash <skill-path>/scripts/archive-devlog.sh <project-root>` — 按年归档 Handoff_Logs/
+9. 后置五连检查（v2.1.0 起一行聚合）：
+   - **推荐**：`bash <skill-path>/scripts/handoff-postflight.sh <project-root>` —— 跑 5 个检查 + 一行 PASS/FAIL 汇总；任一失败整体 exit 1；`--quiet` 仅出汇总
+   - 或单独跑（调试时方便定位具体哪一项）：
+     - `scan-credentials.sh <project-root>` — 多文件凭证扫描
+     - `validate-handoff.sh --readiness <project-root>` — 结构 + v2 marker + pointer stats 校验
+     - `handoff-lint.sh HANDOFF.md` — v2 per-file frontmatter + body field 严格校验
+     - `rotation-reminder.sh <project-root>` — 凭证轮换
+     - `archive-devlog.sh <project-root>` — 按年归档 Handoff_Logs/
 10. 把刚写的 Dev Log 文件路径 + 片段回显给用户
 
 ### 读取（`/handoff-recall [N]`）
@@ -89,7 +92,7 @@ description: 把项目交接写进 HANDOFF.md，供同事或未来接手
    - 自动：压缩多余空行 / 补齐 Dev Log 锚点
    - 诊断：缺章节 / Dev Log 乱序 / 缺字段
 3. 按诊断结果**逐项修复**（严格规则见 references）
-4. 后置四连检查（v2 directory mode）
+4. 后置五连检查（v2.1.0 推荐 `handoff-postflight.sh`；或单独跑 5 个脚本）
 5. 回显整理摘要 + 三态检查结果 + 备份文件路径
 
 **禁止**：合并 Dev Log 文件、改写 Decision 原文、删 Gotcha、重编 Gotcha 号、删 pending。
