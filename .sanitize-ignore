@@ -1,0 +1,35 @@
+# Release sanitizer allowlist for intentional test fixtures and documented path examples.
+tests/test_sync_memory.sh
+tests/test_encode_cc_path.sh
+tests/fixtures/
+scripts/encode-cc-path.sh
+skills/handoff/scripts/encode-cc-path.sh
+skills/handoff/evals/*
+# Sanitizer behavior demonstrations — Scenarios 4.1/4.2 deliberately include sensitive-looking
+# strings (Supabase key sample + /Users/alice/project example) to document scanner triggers.
+TEST-SCENARIOS.md
+# Internal planning documents capture dev-time absolute paths; not user-facing artifacts.
+docs/superpowers/plans/*
+docs/superpowers/specs/*
+
+# v2 multi-file layout (v2.1.0+) — Dev Log entries, Decisions, transfer guides,
+# and the v1 backup narrate dev-time work; they intentionally embed absolute
+# paths and machine-specific examples as part of the historical record, not
+# deployable config. Closes the K4 release-sanitize manual mv-files workaround.
+Handoff_Logs/*
+Handoff_Decisions/*
+GOTCHAS.md
+# Note: HANDOFF.md.pre-v2-backup / NEXT_SESSION_NOTES.md / Mac Project Transfer.md
+# 已在 2026-05-13 Decision 0018 D 落地时删除（电脑转移残留，公开不合规）
+
+# v2.2.1+ GitHub publish 公开仓元文件（合法 contact email + git identity literals）
+SECURITY.md
+CODE_OF_CONDUCT.md
+CHANGELOG.md
+docs/GITHUB_RELEASE_SOP.md
+scripts/release-publish-github.sh
+scripts/release-publish-github-backfill.sh
+scripts/release-sanitize-public.sh
+
+# publish worktree 是 release-time 临时目录，不进 release 产物
+.github-publish-wt/
