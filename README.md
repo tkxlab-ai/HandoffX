@@ -244,8 +244,8 @@ cd handoff && git pull && ./install.sh
 # .skill 单文件用户（在 .skill 所在目录）
 unzip -o ./handoff-v<版本>.skill -d ~/.claude/skills/
 chmod +x ~/.claude/skills/handoff/scripts/*.sh
-cp ~/.claude/skills/handoff/commands/handoff-{recall,tidy,memory}.md ~/.claude/commands/
-cp ~/.claude/skills/handoff/commands/handoff-init.md ~/.claude/commands/
+cp ~/.claude/skills/handoff/command-shims/handoff-{recall,tidy,memory}.md ~/.claude/commands/
+cp ~/.claude/skills/handoff/command-shims/handoff-init.md ~/.claude/commands/
 ```
 
 升级后在 Claude Code 里 `/reload-plugins`，或重启 Claude Code。
@@ -305,10 +305,10 @@ handoff/
 ├── tests/                    ← 回归测试（24 套件，含 v2 schema / migrate / recall contract / postflight / K4 chicken-egg guard）
 └── Release/
     ├── CHANGELOG.md          ← 版本历史
-    ├── latest → handoff-v2.1.3             ← 软链接
-    └── handoff-v2.1.3/
-        ├── handoff-v2.1.3.skill            ← 单文件分发
-        ├── handoff-v2.1.3-source.tar.gz    ← 源码包
+    ├── latest → handoff-v2.1.4             ← 软链接
+    └── handoff-v2.1.4/
+        ├── handoff-v2.1.4.skill            ← 单文件分发
+        ├── handoff-v2.1.4-source.tar.gz    ← 源码包
         └── RELEASE_NOTES.md
 ```
 

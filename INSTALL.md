@@ -115,7 +115,7 @@ unzip -o ./handoff-v<版本>.skill -d ~/.claude/skills/
 # 给脚本执行权限
 chmod +x ~/.claude/skills/handoff/scripts/*.sh
 
-# 安装 slash command shims（/handoff 由 skill name 注册，其余入口从 commands/ 复制）
+# 安装 slash command shims（/handoff 由 skill name 注册，其余入口从 command-shims/ 复制；v2.1.3 起改名，原 commands/）
 cp ~/.claude/skills/handoff/commands/handoff-{recall,tidy,memory}.md ~/.claude/commands/
 cp ~/.claude/skills/handoff/commands/handoff-init.md ~/.claude/commands/
 ```

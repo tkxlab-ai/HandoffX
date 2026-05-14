@@ -73,3 +73,23 @@ D 的代价：
 5. **Phase 5**: gitx-release v2.1.3 + audit 209/0/0 + commit + tag + push private Git host + Dev Log 0043
 
 **关联**：Gotcha #16（对照官方现行规范定期重新校准 + 双路径迁移模板 + skill spec compliance 模板）；Gotcha #9（obsolete since v2.1.3）；Dev Log 0043（v2.1.3 实施记录）；Dev Log 0042（v2.1.2 Linux compat，实战观察期决策的同会话延续）；Decision 0013（v2.2.0 race fix 推延保持有效，本周期只动 dir convention + skill spec）；`code.claude.com/docs/en/skills`（官方 spec 证据）+ `opencode.ai/docs/commands`（OpenCode 官方文档证据）
+
+---
+
+### Outcome（v2.1.4 hot-fix 时回填，记录 plan-vs-actual drift）
+
+D 计划里 **2 项被 release-gate 反转，1 项打了折扣**——v2.1.3 实际交付与本 Decision 上方"落地"段不完全一致。诚实回填：
+
+| 计划项 | 实际 | 反转原因 |
+|--------|------|----------|
+| ✅ A — OpenCode `command/` → `commands/`（含双路径清理） | shipped | — |
+| ✅ B1 — `commands/` → `command-shims/` git mv | shipped + 加 bootstrap rename | — |
+| ❌ **B2** — `agents/codex-commands.txt` → `assets/codex-commands.txt` | **revert，保留原位** | `gitx-release release-audit.sh:561,614` 硬要求 `.skill 含 agents/codex-commands.txt` 作 Codex \$ selector manifest——是项目自身 release pipeline 契约，不是 Claude Code skill convention（Gotcha #16 case #4） |
+| 🔶 **C** — SKILL.md frontmatter 加 `when_to_use` 多行 trigger | **降级：只扩 description 双语关键词** | Anthropic 官方 `skill-creator` validator（`package_skill.py`）只认 6 字段子集（`name/description/license/allowed-tools/metadata/compatibility`），拒收 `when_to_use`。docs.claude.com 列 ~12 字段是 Claude Code runtime loader 的能力集合，不是分发标准（Gotcha #16 case #3） |
+
+**Outcome 教训**（沉淀方法论）：
+1. **改动前必须 grep 内部 release pipeline 是否引用待移动路径**——B2 失败本质是没查 gitx-release `release-audit.sh` 对 `agents/codex-commands.txt` 的硬依赖。"看起来 misleading 的命名" ≠ "可以无副作用改名"
+2. **跨工具分发 skill 必须按最小公倍数约束**——docs.claude.com 描述 loader 能力，validator 限制 packager。**先用 validator 验**，再决定加哪些 frontmatter 字段
+3. **Decision 文档必须有 Outcome 回填**——v2.1.3 这次刚发现：原始 Decision 段（"落地"列表）写的是计划，与实际交付存在 drift。本次回填证明 Decision 模板需要强制 Outcome 字段。建议进 v2.2.0 的 Decision template 改进 backlog
+
+**关联 Hot-fix**：Dev Log 0044（v2.1.4 docs drift hot-fix）；code-review finding `Important #2`（Decision 0017 plan-vs-actual drift，由 superpowers:requesting-code-review subagent 独立 review 触发）

@@ -2,6 +2,41 @@
 
 记录各版本的关键变化。最新版本在最上面。
 
+## v2.1.4 — 2026-05-11
+
+**Theme: v2.1.3 docs drift hot-fix — superpowers code-reviewer subagent 独立 review 触发的 1 Critical + 4 Important plan-vs-actual 一致性修复。**
+
+### Why
+
+按 CLAUDE.md §4「authoring/review 必须分离」，v2.1.3 release 后调 `superpowers:requesting-code-review` subagent 跑独立 review（独立 context、未见我作者侧思路）。reviewer 报 `With fixes` verdict，发现：
+
+- **Critical**：INSTALL.md / README.md / CONTRIBUTING.md 共 ~10 处仍引用 `skills/handoff/commands/`（v2.1.3 已改名 `command-shims/`），用户手动 `unzip + cp` v2.1.3 .skill 包会撞 `No such file or directory`
+- **Important**：v2.1.3 两次 release-gate 反转（B2 `agents/` 移动被 audit 拒 + C `when_to_use` 字段被 validator 拒）的"plan-vs-actual drift"在 `HANDOFF.md:36 项目阶段` / `Decision 0017 落地` / `CHANGELOG.md v2.1.3 §Key changes` 三处仍按原始计划写，没有 honest 回填 Outcome——破坏 handoff 系统"Decision 是 why 真相源"的契约
+
+### Key changes（全部 docs-only，零 code 改动）
+
+- **`INSTALL.md` + `README.md`**: 4 处 `skills/handoff/commands/` → `skills/handoff/command-shims/` 手动 install 路径修正；`README.md` 引用版本号 `v2.1.3` → `v2.1.4`
+- **`CONTRIBUTING.md:76`**: contributor checklist 命令定义路径同步
+- **`HANDOFF.md`**: `项目阶段` 行 v2.1.3 描述去掉错误的 `frontmatter when_to_use 扩展` 字样，改为 `SKILL.md description 双语扩展`；版本 `当前版本` 升 v2.1.4
+- **`CHANGELOG.md v2.1.3 §Why`**: 原 "3 项 Skill spec 偏离" 段重写为"初版怀疑 3 项里 2 项 release-gate 反转"，每项标 ✅/❌ outcome
+- **`CHANGELOG.md v2.1.3 §目录改名`**: B2 `agents/codex-commands.txt → assets/` 加 ❌ **撤回** 标记 + 引用 release-audit.sh 路径
+- **`Handoff_Decisions/0017-...md`**: 加 `Outcome（v2.1.4 hot-fix 时回填）` 表格段落，逐项 ✅/❌/🔶 标记 plan-vs-actual + 3 条 Outcome 教训（grep 内部依赖 / validator 验 / Decision Outcome 模板）
+- **`tests/test_doc_freshness_k4_chicken_egg.sh:25`**: trap SIGKILL 边界注释（acceptable as-is，仅记录限制）
+
+### Why hot-fix not feature
+
+review 一次发现 5 处 docs drift 都源于：**3 个 patch 同 context 自审 + plan 改动 + release-gate 反转**这个组合 → "Decision/Doc 段写的是计划，实际交付有 drift"。**这条 v2.1.3 release process 缺陷**已沉淀进 Decision 0017 Outcome 段 + Gotcha #16 教训"Decision 文档必须有 Outcome 回填"。v2.2.0 的 backlog 应增"Decision template 加 Outcome 必填字段"。
+
+### Backward compatibility
+
+100% 兼容：纯 docs 修订，0 行 code 改动，0 套件断言变化，0 行 install.sh 改动。macOS 24/24 ✅ 保持。
+
+### Audit trail
+
+由 **`superpowers:requesting-code-review`** subagent (`general-purpose` Task tool) 独立 review 触发；review 完整 5-section findings（Strengths / Critical / Important / Minor / Recommendations）记录于 Dev Log 0044。
+
+---
+
 ## v2.1.3 — 2026-05-11
 
 **Theme: Skill spec compliance polish + OpenCode dir convention drift fix.**
@@ -11,7 +46,10 @@
 实战观察期连发两个 patch（v2.1.1 K4 + v2.1.2 Linux）后，Boss 让对照官方 Skill 文档检查 handoff 架构合规性。fetch `code.claude.com/docs/en/skills` + `github.com/anthropics/skills` + `opencode.ai/docs/commands` 后发现两条独立痛点：
 
 1. **OpenCode dir convention drift**（functional）：Gotcha #9（2026-05-06，v1.2.6 era）记录的"OpenCode 用单数 `command/`"在 v1.14.41 已过时——官方文档只提复数 `commands/`。OpenCode v1.14+ 双路径都读但**不去重**，install.sh 沿用过时 Gotcha 结论 = 用户报"commands/ 目录为空"。
-2. **Skill spec 偏离累积**（cosmetic）：`skills/handoff/commands/` 命名误导（spec 明文"commands/ 在 skill 内不是 Claude Code 读取路径"，install.sh 必须剥离，Gotcha #5）；`agents/codex-commands.txt` 误用（Claude Code agent 路径不在 skill 内）；SKILL.md frontmatter 只设 description，未利用 spec 推荐的 `when_to_use`（trigger discoverability 不足）。
+2. **初版怀疑的 Skill spec 偏离累积**（cosmetic，**3 项原始怀疑里 2 项 release-gate 反转**）：
+   - `skills/handoff/commands/` 命名误导（spec 明文"commands/ 在 skill 内不是 Claude Code 读取路径"，install.sh 必须剥离，Gotcha #5）→ ✅ **实际改名**为 `command-shims/`
+   - `agents/codex-commands.txt` 怀疑误用（Claude Code agent 路径不在 skill 内）→ ❌ **release-gate 反转**：gitx-release 项目内部硬要求此路径作 Codex \$ selector manifest（Gotcha #16 case #4）
+   - SKILL.md frontmatter 仅设 description，docs 列 `when_to_use` 等 ~12 字段为合法 → ❌ **release-gate 反转**：skill-creator validator 只认 6 字段子集（Gotcha #16 case #3）
 
 两条根因同：**项目对照官方现行规范缺乏周期性校准**。Gotcha #16 沉淀这条规律。
 
@@ -22,9 +60,9 @@
   - 双路径残留清理：install-time 清掉**单数 `command/`** AND **复数 `commands/`**（防 5+5=10 palette 重复，OpenCode v1.14+ 不去重）
   - `SKILL_SRC/commands/` → `SKILL_SRC/command-shims/`（5 处引用）
   - Bootstrap-time `commands → command-shims` rename（line 141-148）：让 v2.1.2 及更早的 .skill 包仍可被 v2.1.3 install.sh 自举
-- **目录改名**:
-  - `git mv skills/handoff/commands skills/handoff/command-shims`（命名澄清——shim 源镜像而非 Claude Code 读取路径）
-  - `git mv skills/handoff/agents/codex-commands.txt skills/handoff/assets/codex-commands.txt` + 删除空 `agents/` 目录
+- **目录改名（实际交付）**:
+  - ✅ `git mv skills/handoff/commands skills/handoff/command-shims`（命名澄清——shim 源镜像而非 Claude Code 读取路径）
+  - ❌ **撤回**：`agents/codex-commands.txt → assets/codex-commands.txt` 在 release-gate 时被 `gitx-release release-audit.sh:561,614` 拒（要求此路径作 Codex \$ selector manifest），revert 保留原位。详见下方 Gotcha #16 case study #4
 - **`skills/handoff/SKILL.md` frontmatter**:
   - `description` 适度扩展（≤160 chars 项目 budget；≤1024 chars skill-creator validator cap）+ 中英双语关键词；trigger 信息压进 description，**未加 `when_to_use`**——理由见下方"跨工具分发约束"
 - **关键发现 — Claude Code docs vs skill-creator validator 互相矛盾**:

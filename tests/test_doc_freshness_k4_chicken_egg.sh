@@ -23,6 +23,11 @@ restore_latest() {
         ln -sfn "$ORIGINAL_TARGET" "$LATEST_LINK"
     fi
 }
+# trap EXIT 涵盖 normal exit + signals INT/TERM/HUP（bash 5 EXIT 在收到这些
+# signal 时也会 fire 退出 handler）。**SIGKILL (-9) 例外**：内核直接终止进程，
+# 任何 trap 都不 fire，会留 Release/latest 指向 handoff-v0.0.1-stale 污染。
+# 概率极低（只有 OOM-killer / 显式 kill -9 才触发）；为保持简单暂不加
+# chroot/temp-tree 隔离层。若未来真撞到，把整段移到 mktemp -d 副本里跑。
 trap restore_latest EXIT
 
 # Repoint Release/latest to a bogus stale value.

@@ -73,7 +73,7 @@ type: `feat` / `fix` / `refactor` / `docs` / `test` / `chore`
 - [ ] `bash scripts/scan-credentials.sh HANDOFF.md` 通过
 - [ ] 无绝对路径硬编码（`grep -r "/Users/" .` 无命中）
 - [ ] 更新了相关文档 / README
-- [ ] 若改了命令定义（`skills/handoff/commands/*.md`），跑一次 `/handoff` 和 `/handoff-recall` 人工验证
+- [ ] 若改了命令定义（`skills/handoff/command-shims/*.md`，v2.1.3 起改名，原 `commands/`），跑一次 `/handoff` 和 `/handoff-recall` 人工验证
 
 ## 发布
 
