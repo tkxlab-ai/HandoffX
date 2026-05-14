@@ -133,4 +133,23 @@
 - **教训**：每个 CLI 的 slash command 注册都得**真机验证**，不能从 Claude Code 的行为外推。OpenCode 的命令目录是 `command/` 单数，跟 Claude Code 的 `~/.claude/commands/` 复数恰好相反。Gotcha #5（Claude Code 从三处注册）和 #9（OpenCode 必须显式 shim）是镜像对称的两个雷区。
 - **关联 Dev Log**：2026-05-06 09:17（v1.2.6 发版）
 
+### Gotcha #14 — `[release]` Pre-release gate 的版本真相源必须是项目当前状态，不能是 release pipeline 末端的产物状态
+- **症状**：v2.0.0（Dev Log 0031）和 v2.1.0（Dev Log 0039）两次 release 都撞到——`tests/run_all.sh` 跑 `test_doc_freshness.sh` 时 root README/HANDOFF 已 bump 到 v-next 但 `Release/latest` 还指 v-prev → Test 4 `README.md Release/latest 引用` + Test 5 `HANDOFF.md Current State 版本号` 双双判 stale。临时 workaround：revert root README/HANDOFF 回 v-prev → 跑 release（成功翻 latest）→ 升回 v-next → re-commit。后果：release tarball 内 `Release/handoff-v-next/README.md` 锁死 v-prev snapshot，gitx-release audit `§3_sync` 立刻发现 `diff root/README.md vs Release/handoff-v-next/README.md` 不一致（v2.1.0 audit 实测 208 ✅ / 1 ❌ 卡在此条）。
+- **根因**：测试设计层把"README/HANDOFF 引用的版本"和"`Release/latest` symlink 当前指向"绑死，但 release pipeline 的时间线本质上不可同步：
+  1. 开发期：root VERSION + docs 在工作树上 = v-next（即将发的版本）
+  2. Pre-release gate（`run_all.sh`）：此刻 `Release/latest` 仍 → v-prev（上次发的版本，下面才会翻）
+  3. Release pipeline：staging + 平摊文档 → tarball；最后才 `ln -sfn handoff-v-next Release/latest`
+  时间线 step 1 和 step 2 间必然存在窗口期 root != Release/latest——把这两者强行同步等于禁止 README 引用即将发的版本。本质是测试断言错了真相源。
+- **方案**：
+  - 真相源切换：`test_doc_freshness.sh` 的 `$LATEST_VERSION` 改为读 root `VERSION` 文件（项目当前/目标版本），不读 `Release/latest` symlink。语义对齐"README 描述自己所在版本的发版状态"，不是"描述当前 deployed 状态"
+  - Helper 重命名：`get_latest_release_version()` → `get_project_version()`，标签更新为"与 root VERSION 一致"
+  - 加 regression test：`tests/test_doc_freshness_k4_chicken_egg.sh` 用 `ln -sfn handoff-v0.0.1-stale Release/latest`（trap 恢复）+ subprocess 跑 `test_doc_freshness.sh` 断言全 14/0 绿，防止未来回退到 `Release/latest` 真相源
+- **教训**：
+  - **Pre-release gate 的真相源必须是项目当前状态**（VERSION 文件 / source tree / 工作树），不能是 release pipeline 末端的产物状态（`Release/latest` symlink / 已发 tarball）。这是 Gotcha #12 "闸门检查的对象必须是当前可观测的事实"的细化形态——产物侧虽然也"可观测"，但**时间线滞后于工作树**，pre-release 阶段必然 stale
+  - "暂时 revert → release → 升回"的 workaround **看似无害实则毒化 artifact**：tarball 平摊取的是工作树 snapshot，revert 期间的 snapshot 被永久封进 release。下游 gitx-release audit `§3_sync` 会发现，但已经发出去了——是马后炮不是闸门
+  - 同一类陷阱（gate 真相源错位）跟 Gotcha #12（skip-when-X 让闸门 noop）本质相同——都是"测试假装在测，实际在配合 release pipeline 摆样子"。审 release-gate 类测试时问"它检查的是工作树事实还是产物事实？"
+- **关联 Dev Log**：0041（v2.1.1 K4 root-cause fix）；0031（v2.0.0 K4 manual workaround，本条根因事件）；0039（v2.1.0 K4 manual workaround 第二次）
+- **关联 Decision**：0015（为何选改测试真相源而非移除断言或 procedural workflow）
+- **关联 Gotcha**：#12（闸门三准则，同根；#14 是其 "fact source"细化）
+
 ---

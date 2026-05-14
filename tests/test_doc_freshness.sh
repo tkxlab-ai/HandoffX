@@ -4,22 +4,28 @@ source "$(cd "$(dirname "$0")" && pwd)/common.sh"
 
 DOC_DIR="$ROOT_DIR"
 
-# ── Helper: 从 Release/ 目录取最新版本号 ──
-get_latest_release_version() {
-    local latest_link="$ROOT_DIR/Release/latest"
-    if [ -L "$latest_link" ]; then
-        basename "$(readlink "$latest_link")"
-    elif [ -d "$latest_link" ]; then
-        ls -d "$ROOT_DIR"/Release/v* 2>/dev/null | sort -V | tail -1 | xargs basename
+# ── Helper: 项目当前/目标版本号（root VERSION 文件）──
+# 不读 Release/latest symlink ——避免 K4 鸡蛋问题（Gotcha #14）：
+# release pipeline 先 bump VERSION + 文档引用 v-next，最后才翻转 Release/latest。
+# 如果从 Release/latest 取真相，doc 引用 v-next 必然被判 stale，
+# 强迫 release 期间 revert 文档（K4 workaround），结果 v-next 的 tarball 内
+# 锁死 v-prev 的文档 snapshot。VERSION 文件是项目所在版本的真相源，
+# Release/latest 是产物部署状态，二者语义不同，时间线也不同。
+get_project_version() {
+    local version_file="$ROOT_DIR/VERSION"
+    if [ -f "$version_file" ]; then
+        local v
+        v=$(tr -d '[:space:]' < "$version_file")
+        [ -n "$v" ] && echo "handoff-$v" || echo "NONE"
     else
         echo "NONE"
     fi
 }
 
-LATEST_VERSION=$(get_latest_release_version)
+PROJECT_VERSION=$(get_project_version)
 
 echo ""
-echo "  📊 Latest release: $LATEST_VERSION"
+echo "  📊 Project version (root VERSION): $PROJECT_VERSION"
 echo ""
 
 # ── Test 1: INSTALL.md 不包含旧测试用例数 "99" ──
@@ -52,24 +58,26 @@ else
     PASS=$((PASS+1))
 fi
 
-# ── Test 4: README.md Release/latest 引用与实际一致 ──
+# ── Test 4: README.md Release/latest 引用与 root VERSION 一致 ──
+# README 中 `latest → handoff-vX.Y.Z` 行声明的是"本版本发行后 Release/latest 将指向何处"，
+# 因此真相源是 root VERSION，不是 Release/latest 的当前 symlink（见 Gotcha #14）。
 README_LATEST_REF=$(echo "$README_CONTENTS" | grep -oE 'latest\s*→\s*(handoff-)?v[0-9]+(\.[0-9]+)*' | head -1 | sed -E 's/.*→[[:space:]]*//')
-if [ -n "$README_LATEST_REF" ] && [ "$README_LATEST_REF" != "$LATEST_VERSION" ]; then
-    echo "  ❌ README.md Release/latest 引用: $README_LATEST_REF, 实际: $LATEST_VERSION"
+if [ -n "$README_LATEST_REF" ] && [ "$README_LATEST_REF" != "$PROJECT_VERSION" ]; then
+    echo "  ❌ README.md Release/latest 引用: $README_LATEST_REF, root VERSION: $PROJECT_VERSION"
     FAIL=$((FAIL+1))
 else
-    echo "  ✅ README.md Release/latest 引用与实际一致 ($LATEST_VERSION)"
+    echo "  ✅ README.md Release/latest 引用与 root VERSION 一致 ($PROJECT_VERSION)"
     PASS=$((PASS+1))
 fi
 
-# ── Test 5: HANDOFF.md Current State 版本号与实际一致 ──
+# ── Test 5: HANDOFF.md Current State 版本号与 root VERSION 一致 ──
 HANDOFF_CONTENTS=$(cat "$DOC_DIR/HANDOFF.md" 2>/dev/null || echo "")
 HANDOFF_VERSION=$(echo "$HANDOFF_CONTENTS" | grep -oE '当前版本.*(handoff-)?v[0-9]+(\.[0-9]+)*' | grep -oE '(handoff-)?v[0-9]+(\.[0-9]+)*' | head -1)
-if [ -n "$HANDOFF_VERSION" ] && [ "$HANDOFF_VERSION" != "$LATEST_VERSION" ]; then
-    echo "  ❌ HANDOFF.md Current State 版本: $HANDOFF_VERSION, 实际最新: $LATEST_VERSION"
+if [ -n "$HANDOFF_VERSION" ] && [ "$HANDOFF_VERSION" != "$PROJECT_VERSION" ]; then
+    echo "  ❌ HANDOFF.md Current State 版本: $HANDOFF_VERSION, root VERSION: $PROJECT_VERSION"
     FAIL=$((FAIL+1))
 else
-    echo "  ✅ HANDOFF.md Current State 版本号与实际一致 ($LATEST_VERSION)"
+    echo "  ✅ HANDOFF.md Current State 版本号与 root VERSION 一致 ($PROJECT_VERSION)"
     PASS=$((PASS+1))
 fi
 

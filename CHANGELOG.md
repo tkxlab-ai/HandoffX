@@ -2,6 +2,33 @@
 
 记录各版本的关键变化。最新版本在最上面。
 
+## v2.1.1 — 2026-05-11
+
+**Theme: K4 chicken-egg root-cause fix — `test_doc_freshness` no longer pins doc references to `Release/latest`.**
+
+### Why
+
+v2.1.0 release（Dev Log 0039）和过往 v2.0.0 release（Dev Log 0031）都撞过同一个鸡蛋问题：`tests/test_doc_freshness.sh` 把"README + HANDOFF 引用的版本"与 `readlink Release/latest` 比对。但 release pipeline 的时间线是：(1) bump root VERSION + docs → v-next；(2) run_all 包含 doc-freshness 检查；(3) release.sh 平摊文档进 tarball；(4) 最后才原子翻转 `Release/latest`。第 2 步 doc-freshness 必然把 v-next vs v-prev 的差异判 stale，强迫 K4 workaround：暂时 revert root docs 回 v-prev → 跑 release → 升回 v-next → re-commit。结果 release tarball 内部锁死 v-prev 的 doc snapshot，gitx-release audit §3_sync 立刻发现 root README ≠ flattened README。这是设计层鸡蛋问题，不是 release 操作错。
+
+### Key changes
+
+- **`tests/test_doc_freshness.sh`**：版本真相源从 `readlink Release/latest` 切换到 root `VERSION` 文件（语义：README/HANDOFF 描述自己所在版本的发版状态，不是描述当前 deployed 状态）。`get_latest_release_version()` → `get_project_version()`；`$LATEST_VERSION` → `$PROJECT_VERSION`；标签更新为"README.md Release/latest 引用与 root VERSION 一致"
+- **`tests/test_doc_freshness_k4_chicken_egg.sh`（新增）**：TDD RED→GREEN guard——临时把 `Release/latest` repoint 到 `handoff-v0.0.1-stale`，断言 `test_doc_freshness.sh` 仍全 14/0 绿。RED 阶段未修前真 fail（README + HANDOFF 各 1 fail），GREEN 阶段修后 1/0 绿。trap 保证恢复原 symlink。这条 guard 让 K4 不会回归——任何把版本源切回 `Release/latest` 的改动直接 fail
+- **`GOTCHAS.md`**：+Gotcha #14（K4 chicken-egg 完整诊断 + 修法 + 教训"任何 pre-release gate 的真相源必须是项目当前状态，不是 release pipeline 末端的产物状态"）
+- **`Handoff_Decisions/0015-2026-05-11-v2-1-1-k4-doc-freshness-source-from-version-not-release-latest.md`**：完整决策推理——选 B（改测试真相源）的理由 + 拒绝 A（移除版本断言）和 C（procedural workflow）的理由
+- **`HANDOFF.md`** Pointer stats：Gotcha 13 → 14；Decision 14 → 15
+
+### Backward compatibility
+
+100% 兼容：稳态下（VERSION == Release/latest symlink target）行为不变；只在 release pipeline window 期改善（doc 引用 v-next + Release/latest 仍 v-prev 不再 fail）。
+
+### Not in v2.1.1（保持推延 v2.2.0）
+
+- race-free migration via flock — 维持 v2.1.0 推延决策（Decision 0013）
+- race-free pointer regen via flock — 同上
+
+---
+
 ## v2.1.0 — 2026-05-11
 
 **Theme: UX polish — let users write Dev Logs more naturally + ship a single-command postflight.**
