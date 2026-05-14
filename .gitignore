@@ -1,0 +1,29 @@
+# macOS
+.DS_Store
+
+# Test scratch
+tests/.tmp/
+
+# Claude Code 本机权限缓存（per-machine，不应进库）
+.claude/settings.local.json
+
+# 编辑器
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# 日志
+*.log
+
+# Release artifacts（per Dev Log 2026-05-01）
+Release/
+
+# 实验性 memory sync（per Dev Log 2026-05-01）
+memory/
+
+# tidy/archive 临时备份
+HANDOFF.md.bak*
+
+# 老备份目录（不入库）
+Handoff_OldBackup_0504/

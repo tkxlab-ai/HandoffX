@@ -1,0 +1,13 @@
+# Release sanitizer allowlist for intentional test fixtures and documented path examples.
+tests/test_sync_memory.sh
+tests/test_encode_cc_path.sh
+tests/fixtures/
+scripts/encode-cc-path.sh
+skills/handoff/scripts/encode-cc-path.sh
+skills/handoff/evals/*
+# Sanitizer behavior demonstrations — Scenarios 4.1/4.2 deliberately include sensitive-looking
+# strings (Supabase key sample + /Users/alice/project example) to document scanner triggers.
+TEST-SCENARIOS.md
+# Internal planning documents capture dev-time absolute paths; not user-facing artifacts.
+docs/superpowers/plans/*
+docs/superpowers/specs/*
