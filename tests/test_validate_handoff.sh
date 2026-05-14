@@ -1,0 +1,221 @@
+#!/bin/bash
+source "$(dirname "$0")/common.sh"
+VAL="$SCRIPTS_DIR/validate-handoff.sh"
+
+# --- template file itself must have all key sections ---
+TPL="$TEMPLATES_DIR/HANDOFF.template.md"
+assert_file_exists "template exists" "$TPL"
+
+for section in "Project Overview" "Architecture" "Coding Conventions" "Current State" "Known Gotchas" "Decision Log" "References" "Milestones" "Features" "Testing" "Development Log"; do
+    if grep -qE "^## [^A-Za-z]*$section" "$TPL"; then
+        echo "  ✅ template has section: $section"; PASS=$((PASS+1))
+    else
+        echo "  ❌ template missing section: $section"; FAIL=$((FAIL+1))
+    fi
+done
+
+if grep -q "🚨 AI 注意" "$TPL"; then
+    echo "  ✅ template has anchor comment"; PASS=$((PASS+1))
+else
+    echo "  ❌ template missing anchor"; FAIL=$((FAIL+1))
+fi
+
+# --- validator: good file passes ---
+ex=0; "$VAL" "$TPL" > /dev/null 2>&1 || ex=$?
+assert_exit "validator passes on template" 0 "$ex"
+
+# --- validator readiness mode delegates to handoff-lint invariants ---
+ready="$TMP_DIR/ready_$$.md"
+cat > "$ready" <<'EOF'
+# T
+## 📦 Project Overview
+x
+## 🏗 Architecture
+x
+## 🎯 Current State
+x
+## 📜 Development Log
+### 2026-04-30 10:00 — Newer
+**触发**: x
+**改动**:
+- a
+**验证**:
+- ok
+**关联**: 无
+### 2026-04-29 10:00 — Older
+**触发**: x
+**改动**:
+- b
+**验证**:
+- ok
+**关联**: 无
+<!-- 🚨 AI 注意：下一次 handoff 追加在此分隔符之上 -->
+EOF
+ex=0; "$VAL" --readiness "$ready" > /dev/null 2>&1 || ex=$?
+assert_exit "validator --readiness passes on recall-ready file" 0 "$ex"
+
+not_ready="$TMP_DIR/not_ready_$$.md"
+perl -0pe 's/2026-04-29 10:00/2026-05-01 10:00/' "$ready" > "$not_ready"
+out=$("$VAL" --readiness "$not_ready" 2>&1 || true)
+ex=0; "$VAL" --readiness "$not_ready" > /dev/null 2>&1 || ex=$?
+assert_exit "validator --readiness fails on out-of-order Dev Log" 1 "$ex"
+assert_contains "validator --readiness reports lint finding" "$out" "reverse chronological"
+
+# --- validator: missing required section fails ---
+bad="$TMP_DIR/bad_$$.md"
+grep -v "Current State" "$TPL" > "$bad"
+ex=0; "$VAL" "$bad" > /dev/null 2>&1 || ex=$?
+assert_exit "validator fails without Current State" 1 "$ex"
+
+# --- validator: v1 layout missing anchor fails (v2 layouts don't need it) ---
+# Strip v2 marker first so we test the v1 anchor invariant unambiguously.
+bad2="$TMP_DIR/bad2_$$.md"
+grep -v -F -- '<!-- HANDOFF v2 schema -->' "$TPL" | grep -v "🚨 AI 注意" > "$bad2"
+ex=0; "$VAL" "$bad2" > /dev/null 2>&1 || ex=$?
+assert_exit "validator fails without anchor (v1 layout)" 1 "$ex"
+
+# --- validator: missing Decision Log warns but does not fail ---
+bad3="$TMP_DIR/bad3_$$.md"
+grep -v "Decision Log" "$TPL" > "$bad3"
+out=$("$VAL" "$bad3" 2>&1 || true)
+ex=0; "$VAL" "$bad3" > /dev/null 2>&1 || ex=$?
+assert_exit    "validator exits 0 when only Decision Log missing" 0 "$ex"
+assert_contains "validator warns about Decision Log" "$out" "Decision Log"
+
+# --- validator: missing References warns but does not fail ---
+bad4="$TMP_DIR/bad4_$$.md"
+grep -v "References" "$TPL" > "$bad4"
+out=$("$VAL" "$bad4" 2>&1 || true)
+ex=0; "$VAL" "$bad4" > /dev/null 2>&1 || ex=$?
+assert_exit    "validator exits 0 when only References missing" 0 "$ex"
+assert_contains "validator warns about References" "$out" "References"
+
+# --- validator recognises the project-knowledge trio as RECOMMENDED ---
+for sec in Milestones Features Testing; do
+    bad="$TMP_DIR/bad_${sec}_$$.md"
+    grep -v "$sec" "$TPL" > "$bad"
+    out=$("$VAL" "$bad" 2>&1 || true)
+    ex=0; "$VAL" "$bad" > /dev/null 2>&1 || ex=$?
+    assert_exit    "validator exits 0 when only $sec missing" 0 "$ex"
+    assert_contains "validator warns about $sec"          "$out" "$sec"
+done
+
+# --- Overview must include Goals + Non-Goals (Nonaka/Grove: why, not just what) ---
+assert_contains "template Overview has Goals"     "$(cat "$TPL")" "Goals"
+assert_contains "template Overview has Non-Goals" "$(cat "$TPL")" "Non-Goals"
+
+# --- validator: nonexistent file ---
+ex=0; "$VAL" "/no/such/file.md" > /dev/null 2>&1 || ex=$?
+assert_exit "validator fails on missing file" 2 "$ex"
+
+# --- validator: 复合标题 "X & Y" / "X — Z" 必须被识别（regex 右端锚定修复回归） ---
+compound="$TMP_DIR/compound_$$.md"
+cat > "$compound" <<'EOF'
+# T
+## 📦 Project Overview
+x
+## 🏗 Architecture
+x
+## 🎯 Current State
+x
+## 🧭 Decision Log
+x
+## 🗺 Milestones & Roadmap
+x
+## ✨ Features & Modules — 已交付全景
+x
+## 🧪 Testing — 详细测试状况
+x
+## 📚 References & Docs Map
+x
+## 🔑 Coding Conventions
+x
+## 🐛 Known Gotchas
+x
+## 📜 Development Log
+x
+<!-- 🚨 AI 注意：下一次 handoff 追加在此分隔符之上 -->
+EOF
+ex=0; "$VAL" "$compound" > /dev/null 2>&1 || ex=$?
+assert_exit "compound titles (X & Y / X — Z) recognized" 0 "$ex"
+
+# --- validator: 反向检查——"Architecture Notes" 不能被误判为 "Architecture" 存在 ---
+false_pos="$TMP_DIR/falsepos_$$.md"
+cat > "$false_pos" <<'EOF'
+# T
+## 📦 Project Overview
+x
+## 🏗 Architecture Notes
+x
+## 🎯 Current State
+x
+## 📜 Development Log
+x
+<!-- 🚨 AI 注意：下一次 handoff 追加在此分隔符之上 -->
+EOF
+ex=0; "$VAL" "$false_pos" > /dev/null 2>&1 || ex=$?
+assert_exit "'Architecture Notes' does NOT match 'Architecture' (still rejected)" 1 "$ex"
+
+# ─── v2 directory-arg mode (H3) ─────────────────────────────────────────────
+SANDBOX_V2=$(mktemp -d)
+cat > "$SANDBOX_V2/HANDOFF.md" <<'EOF'
+<!-- HANDOFF v2 schema -->
+# Demo
+
+## 📦 Project Overview
+x
+
+## 🏗 Architecture
+x
+
+## 🎯 Current State
+x
+
+## 📜 Development Log
+
+最近一条：(none)
+最早一条：(none)
+共 0 条
+
+## 🐛 Known Gotchas
+
+共 0 条；最新：(none)
+
+## 🧭 Decision Log
+
+共 0 条；最新：`(none)`
+
+<!-- 🚨 AI 注意：下一次 handoff 追加在此分隔符之上 -->
+EOF
+ex=0; "$VAL" "$SANDBOX_V2" >/dev/null 2>&1 || ex=$?
+assert_exit "v2 dir arg with valid pointer blocks → exit 0" 0 "$ex"
+
+EMPTY_V2=$(mktemp -d)
+ex=0; "$VAL" "$EMPTY_V2" >/dev/null 2>&1 || ex=$?
+assert_exit "v2 empty dir → exit 2" 2 "$ex"
+
+# v2 marker but missing pointer stats → warning printed, exit still 0 (soft).
+SANDBOX_BROKEN=$(mktemp -d)
+cat > "$SANDBOX_BROKEN/HANDOFF.md" <<'EOF'
+<!-- HANDOFF v2 schema -->
+# Demo
+## 📦 Project Overview
+x
+## 🏗 Architecture
+x
+## 🎯 Current State
+x
+## 📜 Development Log
+(missing 共 N 条 stat line)
+## 🐛 Known Gotchas
+(missing stat)
+## 🧭 Decision Log
+(missing stat)
+<!-- 🚨 AI 注意：下一次 handoff 追加在此分隔符之上 -->
+EOF
+out=$("$VAL" "$SANDBOX_BROKEN/HANDOFF.md" 2>&1 || true)
+assert_contains "v2 marker without stats → warns about pointer stats" "$out" "pointer stat lines missing"
+
+rm -rf "$SANDBOX_V2" "$EMPTY_V2" "$SANDBOX_BROKEN"
+
+summary
