@@ -26,12 +26,12 @@ DEV_LOG_COUNT=$(awk '
     /^## 📜 Development Log/ { in_section=1; next }
     /^## / && in_section { in_section=0 }
     in_section
-' "$HANDOFF" | grep -cE '^### [0-9]{4}-[0-9]{2}-[0-9]{2}' || true)
+' "$HANDOFF" | grep -cE '^### [0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]' || true)
 DECISION_COUNT=$(awk '
     /^## 🧭 Decision Log/ { in_section=1; next }
     /^## / && in_section { in_section=0 }
     in_section
-' "$HANDOFF" | grep -cE '^### [0-9]{4}-[0-9]{2}-[0-9]{2}' || true)
+' "$HANDOFF" | grep -cE '^### [0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]' || true)
 GOTCHA_COUNT=$(awk '
     /^## 🐛 Known Gotchas/ { in_section=1; next }
     /^## / && in_section { in_section=0 }
@@ -175,7 +175,7 @@ fi
 # Content continues until next ### or --- separator or EOF
 TMPRAW=$(mktemp -d)
 awk -v outdir="$TMPRAW" '
-    /^### [0-9]{4}-[0-9]{2}-[0-9]{2}/ {
+    /^### [0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]/ {
         # Save previous entry if we have one
         if (header != "") {
             fname = outdir "/raw-" entry_n ".md"
@@ -224,8 +224,8 @@ sortlist=$(
     for raw in "$TMPRAW"/raw-*.md; do
         [ -f "$raw" ] || continue
         first_line=$(head -1 "$raw")
-        date_part=$(printf '%s' "$first_line" | grep -oE '[0-9]{4}-[0-9]{2}-[0-9]{2}' | head -1 || true)
-        time_part=$(printf '%s' "$first_line" | grep -oE '[0-9]{2}:[0-9]{2}' | head -1 || true)
+        date_part=$(printf '%s' "$first_line" | grep -oE '[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]' | head -1 || true)
+        time_part=$(printf '%s' "$first_line" | grep -oE '[0-9][0-9]:[0-9][0-9]' | head -1 || true)
         [ -z "$time_part" ] && time_part="00:00"
         # Strip colons and dashes for numeric sort key: 20260430T1000
         sort_key="${date_part}${time_part//:}"
@@ -244,8 +244,8 @@ while IFS='|' read -r _key raw; do
     # `|| true` swallows grep's no-match exit so pipefail doesn't abort on
     # legacy entries that omit HH:MM (date-only headers).
     first_line=$(head -1 "$raw")
-    date_part=$(printf '%s' "$first_line" | grep -oE '[0-9]{4}-[0-9]{2}-[0-9]{2}' | head -1 || true)
-    time_part=$(printf '%s' "$first_line" | grep -oE '[0-9]{2}:[0-9]{2}' | head -1 || true)
+    date_part=$(printf '%s' "$first_line" | grep -oE '[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]' | head -1 || true)
+    time_part=$(printf '%s' "$first_line" | grep -oE '[0-9][0-9]:[0-9][0-9]' | head -1 || true)
     [ -z "$time_part" ] && time_part="00:00"
 
     # Compact timestamp for filename: 2026-04-30T1000
@@ -253,7 +253,7 @@ while IFS='|' read -r _key raw; do
     timestamp="${date_part}T${time_compact}"
 
     # Extract title: strip "### YYYY-MM-DD [HH:MM] —/–/- " prefix; HH:MM optional.
-    title=$(printf '%s' "$first_line" | sed -E 's/^### [0-9]{4}-[0-9]{2}-[0-9]{2}([[:space:]]+[0-9]{2}:[0-9]{2})?[[:space:]]*[—–-]+[[:space:]]*//')
+    title=$(printf '%s' "$first_line" | sed -E 's/^### [0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]([[:space:]]+[0-9][0-9]:[0-9][0-9])?[[:space:]]*[—–-]+[[:space:]]*//')
 
     slug=$(slugify "$title")
     out="$LOGS_DIR_PARTIAL/${nnnn}-${timestamp}-${slug}.md"
@@ -293,7 +293,7 @@ awk '
 # Each entry starts with ### YYYY-MM-DD — title (date only, no time)
 TMPRAW_DEC=$(mktemp -d)
 awk -v outdir="$TMPRAW_DEC" '
-    /^### [0-9]{4}-[0-9]{2}-[0-9]{2}/ {
+    /^### [0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]/ {
         # Save previous entry if we have one
         if (header != "") {
             fname = outdir "/raw-" entry_n ".md"
@@ -341,7 +341,7 @@ sortlist_dec=$(
     for raw in "$TMPRAW_DEC"/raw-*.md; do
         [ -f "$raw" ] || continue
         first_line=$(head -1 "$raw")
-        date_part=$(printf '%s' "$first_line" | grep -oE '[0-9]{4}-[0-9]{2}-[0-9]{2}' | head -1 || true)
+        date_part=$(printf '%s' "$first_line" | grep -oE '[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]' | head -1 || true)
         # Sort key: numeric date digits only (no time component)
         sort_key="${date_part//-}"
         printf '%s|%s\n' "$sort_key" "$raw"
@@ -356,10 +356,10 @@ while IFS='|' read -r _key raw; do
 
     # Parse first line: "### YYYY-MM-DD — title"
     first_line=$(head -1 "$raw")
-    date_part=$(printf '%s' "$first_line" | grep -oE '[0-9]{4}-[0-9]{2}-[0-9]{2}' | head -1 || true)
+    date_part=$(printf '%s' "$first_line" | grep -oE '[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]' | head -1 || true)
 
     # Extract title: everything after the em-dash (—)
-    title=$(printf '%s' "$first_line" | sed -E 's/^### [0-9]{4}-[0-9]{2}-[0-9]{2}[[:space:]]*[—–-]+[[:space:]]*//')
+    title=$(printf '%s' "$first_line" | sed -E 's/^### [0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9][[:space:]]*[—–-]+[[:space:]]*//')
 
     slug=$(slugify "$title")
     out="$DEC_DIR_PARTIAL/${nnnn}-${date_part}-${slug}.md"

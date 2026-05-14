@@ -39,7 +39,7 @@ archive_v2_yearly() {
     for f in "$logs"/[0-9][0-9][0-9][0-9]-[0-9][0-9][0-9][0-9]-*.md; do
         [ -f "$f" ] || continue
         base=$(basename "$f")
-        year=$(printf '%s' "$base" | sed -nE 's/^[0-9]{4}-([0-9]{4})-.*/\1/p')
+        year=$(printf '%s' "$base" | sed -nE 's/^[0-9][0-9][0-9][0-9]-([0-9][0-9][0-9][0-9])-.*/\1/p')
         [ -n "$year" ] || continue
         if [ "$year" -lt "$cutoff" ]; then
             archive_year_dir="$root/Handoff_Logs.archive/$year"
@@ -78,7 +78,7 @@ fi
 count=$(awk '
     /^## 📜 Development Log/ { in_log=1; next }
     /^## / && in_log         { in_log=0 }
-    in_log && /^### [0-9]{4}-[0-9]{2}-[0-9]{2}/ { c++ }
+    in_log && /^### [0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]/ { c++ }
     END { print c+0 }
 ' "$FILE")
 
@@ -102,7 +102,7 @@ awk -v threshold="$THRESHOLD" -v keepf="$TMP_KEEP" -v movef="$TMP_MOVE" '
     /^## / && in_log { in_log=0 }
 
     in_log {
-        if (/^### [0-9]{4}-[0-9]{2}-[0-9]{2}/) {
+        if (/^### [0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]/) {
             if (buf != "") {
                 entry_idx++
                 out = (entry_idx <= threshold) ? keepf : movef
@@ -141,7 +141,7 @@ awk -v keepf="$TMP_KEEP" -v archive="$(basename "$ARCHIVE")" -v threshold="$THRE
         hdr_done=0
         next
     }
-    in_log && !hdr_done && /^### [0-9]{4}-[0-9]{2}-[0-9]{2}/ {
+    in_log && !hdr_done && /^### [0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]/ {
         hdr_done=1
         while ((getline line < keepf) > 0) print line
         close(keepf)
@@ -196,7 +196,7 @@ if [ -f "$ARCHIVE" ]; then
             # Load all MOVE entries into memory. Preserve order even when headers match.
             cur=""; n_move=0
             while ((getline line < movef) > 0) {
-                if (line ~ /^### [0-9]{4}-/) {
+                if (line ~ /^### [0-9][0-9][0-9][0-9]-/) {
                     if (cur != "") move_buf[++n_move]=cur
                     cur=line
                 } else if (cur != "") {
@@ -208,7 +208,7 @@ if [ -f "$ARCHIVE" ]; then
             emit_phase=0  # 0=header, 1=body
         }
         # Phase 0: print existing archive header (everything before first ###)
-        !emit_phase && /^### [0-9]{4}-/ {
+        !emit_phase && /^### [0-9][0-9][0-9][0-9]-/ {
             emit_phase=1
             # Emit MOVE entries first (newest at top, preserving MOVE-file order)
             for (i=1; i<=n_move; i++) {
@@ -219,7 +219,7 @@ if [ -f "$ARCHIVE" ]; then
         }
         !emit_phase { print; next }
         # Phase 1: existing archive body — dedup by full body
-        /^### [0-9]{4}-/ {
+        /^### [0-9][0-9][0-9][0-9]-/ {
             flush_existing()
             cur_body=$0
             next

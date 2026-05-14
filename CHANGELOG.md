@@ -2,6 +2,49 @@
 
 记录各版本的关键变化。最新版本在最上面。
 
+## v2.1.2 — 2026-05-11
+
+**Theme: Linux compatibility — mawk regex POSIX 化 + chmod-on-root skip；Ubuntu 22.04 容器实测 24/24 ✅。**
+
+### Why
+
+HANDOFF.md 一直声明"Linux 兼容（靠 fallback 代码 + 理论推断）"。实战观察期一旦真在 Ubuntu 22.04 容器跑 `tests/run_all.sh`，**38 个断言挂**（5 个 suite：archive-devlog / handoff-lint / migrate-to-v2 / tidy-handoff / validate-handoff）。理论推断错了。
+
+定位单一根因：**Ubuntu 默认 awk 是 mawk，不支持 regex interval `{N}` quantifier**（macOS BSD awk 支持）。脚本里 14 处 `/^### [0-9]{4}-[0-9]{2}-[0-9]{2}/` 在 mawk 下不匹配 → 计数 / 检测 / 迁移全失效。另有 1 处测试设计问题：`test_migrate_to_v2.sh` B7-a 用 `chmod 555` 模拟"目录不可写"，但 Linux 容器默认 root，CAP_DAC_OVERRIDE 绕开 chmod，root 仍能写。
+
+### Key changes
+
+- **`scripts/archive-devlog.sh` + 双副本**：6 处 awk 内部 regex `{4}-{2}-{2}` / `{4}-` POSIX 化（`[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]` / `[0-9][0-9][0-9][0-9]-`）
+- **`scripts/handoff-lint.sh` + 双副本**：3 处 awk regex `{4}-{2}-{2}` / `{2}:{2}` POSIX 化
+- **`scripts/migrate-to-v2.sh` + 双副本**：2 处 awk regex `{4}-{2}-{2}` POSIX 化
+- **`scripts/tidy-handoff.sh` + 双副本**：3 处 awk regex `{4}-{2}-{2}` / `{2}:{2}` POSIX 化
+- **`tests/test_migrate_to_v2.sh`**：B7-a 加 `[ "$EUID" -eq 0 ]` 检测，root 时 SKIPPED 并标注理由（B7-b 已用路径冲突机制覆盖 rollback contract，对 root 免疫——所以 B7-a skip 不损失测试覆盖）
+- **`GOTCHAS.md`**：+Gotcha #15（mawk regex interval 限制 + Linux deps 清单）
+- **`Handoff_Decisions/0016-...md`**：拒 A（仅文档化）/ B（部分修）/ 选 C（全修发版）推理
+- **`HANDOFF.md`** 目标平台 / 构建状态 / Milestones / Pointer counters 全更新
+
+### Linux runtime deps（容器/原生都要装）
+
+| 包 | 用于 | 缺则报 |
+|---|---|---|
+| `shellcheck` | tests/test_shellcheck.sh | suite 报 "shellcheck 未安装" |
+| `ruby` | test_install.sh C4 YAML 验证 | exit 127 / "ruby: not found" |
+| `unzip` | test_install.sh C10 `.skill` bootstrap | C10 安装失败 |
+| `rsync` | release.sh staging | release dry-run audit exit 127 |
+| `locales` + `LANG=C.UTF-8` | UTF-8 处理（中文字段名 / token budget） | wc -m 错计 / 字段检测漏 |
+
+macOS 默认全装/兼容，无需操作。
+
+### Backward compatibility
+
+100% 兼容：所有 awk regex 改写为 POSIX `[0-9][0-9][0-9][0-9]` 形式，在 BSD awk / gawk / mawk 三家都一致匹配。macOS 行为字节不变（已跑 run_all 24/24 ✅）。
+
+### Not in v2.1.2（保持推延 v2.2.0）
+
+- race-free migration / pointer regen via flock — 维持 Decision 0013 推延
+
+---
+
 ## v2.1.1 — 2026-05-11
 
 **Theme: K4 chicken-egg root-cause fix — `test_doc_freshness` no longer pins doc references to `Release/latest`.**

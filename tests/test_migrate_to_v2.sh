@@ -164,15 +164,22 @@ grep -q '<!-- HANDOFF v2 schema -->' "$SANDBOX_NO_DEC/HANDOFF.md" && { echo "  �
 rm -rf "$SANDBOX_NO_DEC"
 
 # B7-a: chmod 555 sandbox → backup creation fails before any write → exit 1, HANDOFF.md untouched.
+# Skipped when running as root: CAP_DAC_OVERRIDE bypasses chmod-based denial (Linux container
+# default user is root; bare-metal Linux/macOS dev users hit the assertions). B7-b below covers
+# the rollback contract via a root-immune path-collision mechanism (mkdir on existing file).
 SANDBOX_B7a=$(mktemp -d)
 cp "$ROOT_DIR/tests/fixtures/handoff-v1-sample.md" "$SANDBOX_B7a/HANDOFF.md"
-chmod 555 "$SANDBOX_B7a"
-bash "$ROOT_DIR/scripts/migrate-to-v2.sh" --apply --root "$SANDBOX_B7a" >/dev/null 2>&1
-ec=$?
-chmod 755 "$SANDBOX_B7a"
-assert_exit "B7-a: read-only sandbox → exit non-zero" 1 "$ec"
-grep -q '## 📜 Development Log' "$SANDBOX_B7a/HANDOFF.md" && { echo "  ✅ B7-a: HANDOFF.md still v1"; PASS=$((PASS+1)); } || { echo "  ❌ B7-a: HANDOFF.md modified"; FAIL=$((FAIL+1)); }
-[ ! -d "$SANDBOX_B7a/Handoff_Logs" ] && [ ! -d "$SANDBOX_B7a/Handoff_Logs.partial" ] && { echo "  ✅ B7-a: no Handoff_Logs leaked"; PASS=$((PASS+1)); } || { echo "  ❌ B7-a: leaked Handoff_Logs/ or .partial"; FAIL=$((FAIL+1)); }
+if [ "${EUID:-$(id -u)}" -eq 0 ]; then
+    echo "  ➖ B7-a: read-only sandbox SKIPPED (root bypasses chmod 555; B7-b covers rollback contract via path-collision)"
+else
+    chmod 555 "$SANDBOX_B7a"
+    bash "$ROOT_DIR/scripts/migrate-to-v2.sh" --apply --root "$SANDBOX_B7a" >/dev/null 2>&1
+    ec=$?
+    chmod 755 "$SANDBOX_B7a"
+    assert_exit "B7-a: read-only sandbox → exit non-zero" 1 "$ec"
+    grep -q '## 📜 Development Log' "$SANDBOX_B7a/HANDOFF.md" && { echo "  ✅ B7-a: HANDOFF.md still v1"; PASS=$((PASS+1)); } || { echo "  ❌ B7-a: HANDOFF.md modified"; FAIL=$((FAIL+1)); }
+    [ ! -d "$SANDBOX_B7a/Handoff_Logs" ] && [ ! -d "$SANDBOX_B7a/Handoff_Logs.partial" ] && { echo "  ✅ B7-a: no Handoff_Logs leaked"; PASS=$((PASS+1)); } || { echo "  ❌ B7-a: leaked Handoff_Logs/ or .partial"; FAIL=$((FAIL+1)); }
+fi
 rm -rf "$SANDBOX_B7a"
 
 # B7-b: pre-block Handoff_Decisions.partial as a regular file → mid-migration mkdir fails

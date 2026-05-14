@@ -78,11 +78,11 @@ detect_dup_numbers() {
     local f
     while IFS= read -r f; do
         [ -f "$f" ] || continue
-        curr_num=$(basename "$f" | grep -oE '^[0-9]{4}')
+        curr_num=$(basename "$f" | grep -oE '^[0-9][0-9][0-9][0-9]')
         if [ "$curr_num" = "$current_orig_group" ]; then
             # Same original group as the kept file — renumber to next free.
             next=$(acquire_next_number "$dir")
-            rest=$(basename "$f" | sed -E 's/^[0-9]{4}-//')
+            rest=$(basename "$f" | sed -E 's/^[0-9][0-9][0-9][0-9]-//')
             new_path="$dir/${next}-${rest}"
             mv "$f" "$new_path"
             echo "   🔧 Renumbered duplicate: $(basename "$f") → ${next}-${rest}"
@@ -242,11 +242,11 @@ fi
 timestamps=$(awk '
     /^## 📜 Development Log/ { in_log=1; next }
     /^## / && in_log { in_log=0 }
-    in_log && /^### [0-9]{4}-[0-9]{2}-[0-9]{2}/ {
+    in_log && /^### [0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]/ {
         n = split($0, p, " ")
         date = p[2]
         # p[3] might be time "HH:MM" or start of em-dash
-        if (n >= 3 && p[3] ~ /^[0-9]{2}:[0-9]{2}$/) {
+        if (n >= 3 && p[3] ~ /^[0-9][0-9]:[0-9][0-9]$/) {
             time = p[3]
         } else {
             time = "00:00"
@@ -303,7 +303,7 @@ missing_fields_report=$(awk '
         if (in_log && cur != "") flush_entry()
         in_log=0
     }
-    in_log && /^### [0-9]{4}-[0-9]{2}-[0-9]{2}/ {
+    in_log && /^### [0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]/ {
         if (cur != "") flush_entry()
         cur = $0
         delete seen

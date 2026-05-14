@@ -42,10 +42,10 @@ if grep -qF -- '<!-- HANDOFF v2 schema -->' "$FILE"; then
         fi
     done
 
-    DEV_LOG_FILENAME_RE='^[0-9]{4}-[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{4}-.+\.md$'
-    DECISION_FILENAME_RE='^[0-9]{4}-[0-9]{4}-[0-9]{2}-[0-9]{2}-.+\.md$'
-    DEV_LOG_DATE_RE='^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}$'
-    DECISION_DATE_RE='^[0-9]{4}-[0-9]{2}-[0-9]{2}$'
+    DEV_LOG_FILENAME_RE='^[0-9][0-9][0-9][0-9]-[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]T[0-9][0-9][0-9][0-9]-.+\.md$'
+    DECISION_FILENAME_RE='^[0-9][0-9][0-9][0-9]-[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]-.+\.md$'
+    DEV_LOG_DATE_RE='^[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]T[0-9][0-9]:[0-9][0-9]$'
+    DECISION_DATE_RE='^[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]$'
 
     # Codex review #10: extract the date portion encoded in the filename so
     # we can cross-check it against the frontmatter `date:` value. The two
@@ -58,13 +58,13 @@ if grep -qF -- '<!-- HANDOFF v2 schema -->' "$FILE"; then
     extract_filename_date_dev_log() {
         # 0030-2026-05-07T0930-slug.md → 2026-05-07T09:30
         local base="$1" raw
-        raw=$(printf '%s' "$base" | sed -nE 's/^[0-9]{4}-([0-9]{4}-[0-9]{2}-[0-9]{2})T([0-9]{2})([0-9]{2})-.*/\1T\2:\3/p')
+        raw=$(printf '%s' "$base" | sed -nE 's/^[0-9][0-9][0-9][0-9]-([0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9])T([0-9][0-9])([0-9][0-9])-.*/\1T\2:\3/p')
         printf '%s' "$raw"
     }
     extract_filename_date_decision() {
         # 0011-2026-05-07-slug.md → 2026-05-07
         local base="$1" raw
-        raw=$(printf '%s' "$base" | sed -nE 's/^[0-9]{4}-([0-9]{4}-[0-9]{2}-[0-9]{2})-.*/\1/p')
+        raw=$(printf '%s' "$base" | sed -nE 's/^[0-9][0-9][0-9][0-9]-([0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9])-.*/\1/p')
         printf '%s' "$raw"
     }
 
@@ -84,7 +84,7 @@ if grep -qF -- '<!-- HANDOFF v2 schema -->' "$FILE"; then
     lint_v2_entry() {
         local f="$1" expected_type="$2" require_body_fields="$3" expected_date_re="$4"
         local base; base=$(basename "$f")
-        local n_prefix; n_prefix=$(printf '%s' "$base" | grep -oE '^[0-9]{4}' || true)
+        local n_prefix; n_prefix=$(printf '%s' "$base" | grep -oE '^[0-9][0-9][0-9][0-9]' || true)
         local local_findings=0
 
         if [ "$(head -1 "$f" 2>/dev/null)" != "---" ]; then
@@ -102,7 +102,7 @@ if grep -qF -- '<!-- HANDOFF v2 schema -->' "$FILE"; then
 
         local fm_number
         fm_number=$(grep -E '^number:' "$f" | head -1 | sed -E 's/^number:[[:space:]]*//')
-        if ! printf '%s' "$fm_number" | grep -qE '^[0-9]{4}$'; then
+        if ! printf '%s' "$fm_number" | grep -qE '^[0-9][0-9][0-9][0-9]$'; then
             echo "❌ $base: frontmatter number must be 4 digits (got: '$fm_number')"
             local_findings=1
         elif [ "$fm_number" != "$n_prefix" ]; then
@@ -217,7 +217,7 @@ function flush_entry() {
 	    section = $0
 	}
 
-	!in_log && /^### [0-9]{4}-[0-9]{2}-[0-9]{2}/ {
+	!in_log && /^### [0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]/ {
 	    if (section ~ /Decision Log/) next
 	    print "❌ Dev Log entry outside Development Log section — " $0
 	    findings = 1
@@ -232,11 +232,11 @@ function flush_entry() {
     }
 }
 
-in_log && /^### [0-9]{4}-[0-9]{2}-[0-9]{2}/ {
+in_log && /^### [0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]/ {
     flush_entry()
     cur = $0
     date = $2
-    time = ($3 ~ /^[0-9]{2}:[0-9]{2}$/) ? $3 : "00:00"
+    time = ($3 ~ /^[0-9][0-9]:[0-9][0-9]$/) ? $3 : "00:00"
     gsub(/-/, "", date)
     gsub(/:/, "", time)
     ts = date time

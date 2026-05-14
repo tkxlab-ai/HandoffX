@@ -152,4 +152,26 @@
 - **关联 Decision**：0015（为何选改测试真相源而非移除断言或 procedural workflow）
 - **关联 Gotcha**：#12（闸门三准则，同根；#14 是其 "fact source"细化）
 
+### Gotcha #15 — `[runtime]` Linux Ubuntu 默认 awk = mawk，awk 内部 regex 不支持 interval `{N}`
+- **症状**：在 Ubuntu 22.04 容器跑 `tests/run_all.sh`（已装齐 deps），38 个断言挂在 5 个 suite：archive-devlog / handoff-lint / migrate-to-v2 / tidy-handoff / validate-handoff。表象各异（"main file keeps 50 entries got 60" / "out-of-order Dev Log exits 1 got 0" / "B3: 2 Dev Log files created: missing '2'"），但全部追溯到 awk 脚本里 `/^### [0-9]{4}-[0-9]{2}-[0-9]{2}/` 这类 regex literal。
+- **根因**：
+  1. Ubuntu / Debian / 多数 Linux 发行版默认 `/usr/bin/awk` → **mawk**（`/etc/alternatives/awk -> /usr/bin/mawk`）。**mawk 不支持 POSIX interval expression `{N}`** ——这是 mawk 文档明文限制，不是 bug。`[0-9]{4}` 在 mawk 下当字面量解析，匹配失败 → 计数 / 入口检测 / 拆分逻辑全失效
+  2. macOS BSD awk + Linux gawk 都支持 `{N}`，所以本项目过去只在 macOS 测过的代码"看起来"是 POSIX 风但实际依赖了 BSD/GNU 扩展
+  3. 13 个测试 suite（除 5 个 awk 相关）通过——证明这是**编译期级别**的兼容性盲点：bash / sed -E / grep -E / 跨平台 date / readlink 都对了，唯独 awk 内部 regex 中招
+- **方案**：
+  - awk 内部 regex literal `[0-9]{4}` → `[0-9][0-9][0-9][0-9]`；`[0-9]{2}` → `[0-9][0-9]`。POSIX 重复写法在 BSD awk / gawk / mawk **三家都识别**
+  - **不动 sed -E / grep -E**：这两个工具的 `-E` 模式所有平台都支持 `{N}`（BSD / GNU 实现各自支持）
+  - **不动 shell-level grep -E `{N,}`**：scan-credentials.sh 的 `{20,}` `{36,}` 不受影响
+  - 仅扫 4 个 awk-heavy 脚本：archive-devlog / handoff-lint / migrate-to-v2 / tidy-handoff
+  - 加测试环境兼容：`tests/test_migrate_to_v2.sh` B7-a 检测 `$EUID=0` 时 SKIPPED（root 在容器 / 系统里 CAP_DAC_OVERRIDE 绕开 chmod 555）；B7-b 用路径冲突机制（pre-create 文件占用 mkdir 路径）对 root 免疫，rollback contract 仍有完整测试覆盖
+  - **Linux deps 清单**（必装，HANDOFF.md "目标平台" 行同步）：`shellcheck` / `ruby`（test_install C4 YAML）/ `unzip`（test_install C10 .skill bootstrap）/ `rsync`（release.sh staging）/ `locales` + `LANG=C.UTF-8`（UTF-8 中文字段名处理）。macOS 自带或不需要
+- **教训**：
+  - **"看起来 POSIX 的 regex" ≠ "真 POSIX"**：BSD awk 默认行为非 POSIX 但偏宽容，gawk 同样，mawk 严格 POSIX。代码在 BSD / gawk 上跑得过不代表 POSIX——必须在最严格实现（mawk）上验证才算
+  - **跨平台兼容靠"理论推断" 是 anti-pattern**：本项目过去 HANDOFF.md 明文写"Linux 兼容靠 fallback 代码 + 理论推断"，38 个断言挂证明理论错了。**机械验证 > 理论推断**——一个 OrbStack + ubuntu:22.04 docker 容器跑一遍 run_all.sh 就把"理论推断"升级成"实测证据"
+  - **Linux 容器测试时注意 root 默认 user**：CAP_DAC_OVERRIDE 让 chmod-based 拒绝失效；测试要么 skip-on-root 要么用路径冲突机制（mkdir over existing file）这种 root-immune 方式
+  - 跨平台 awk 写法的**通用规则**：内部 regex literal 用 POSIX 字符类 + 显式重复（`[0-9][0-9][0-9][0-9]`），不用 `{N}`；分隔符规避 metachar；空数组下严格模式风险（参考 Gotcha #3）
+- **关联 Dev Log**：0042（v2.1.2 实施 + Ubuntu 22.04 真机验证）
+- **关联 Decision**：0016（C 全修 vs A 仅文档化 vs B 部分修 选项推理）
+- **关联 Gotcha**：#1（grep `-` 选项）+ #3（bash 3.2 set -u 空数组）+ #4（macOS date -v 语法）—— 跨平台兼容性的同类盲点；POSIX-strict 实现暴露 BSD/GNU 扩展依赖
+
 ---
