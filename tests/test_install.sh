@@ -73,8 +73,8 @@ assert_no_claude_handoff_duplicates() {
         echo "  ❌ $label: ~/.claude/commands/handoff.md 不该存在（/handoff 只由 skill name 注册）"
         bad=1
     fi
-    if [ -d "$root/.claude/skills/handoff/commands" ]; then
-        echo "  ❌ $label: skill 目录内 commands/ 不该存在（Claude Code 会重复登记）"
+    if [ -d "$root/.claude/skills/handoff/commands" ] || [ -d "$root/.claude/skills/handoff/command-shims" ]; then
+        echo "  ❌ $label: skill 目录内 commands/ 或 command-shims/ 不该存在（Claude Code 会重复登记 — Gotcha #5）"
         bad=1
     fi
     if find "$root/.claude/skills" -path '*/commands/handoff.md' -type f 2>/dev/null | grep -q .; then
@@ -137,29 +137,33 @@ fi
 teardown_sandbox
 
 # ── Case 3: --opencode 只装 OpenCode ────────────────────────────────────────
-# OpenCode 读 ~/.config/opencode/command/（单数），不像 Claude Code 那样从
-# SKILL.md `name:` 自动注册主命令——所以必须显式拷 handoff.md 进 command/。
-# 详见 Gotcha #9（HANDOFF.md）。
+# OpenCode v1.14+ canonical 路径是 ~/.config/opencode/commands/（**复数**，per
+# 官方文档 opencode.ai/docs/commands）。v1.2.x 时代是单数 command/——Gotcha #9
+# 当时记录的发现已**作废**（见 Gotcha #16），install.sh v2.1.3 起跟随官方文档
+# 写复数。OpenCode v1.14+ 同时读 command/ + commands/ 但**不去重**，所以装新版
+# 必须清掉旧的单数残留。OpenCode 不像 Claude Code 那样从 SKILL.md `name:` 自动
+# 注册主命令——所以必须显式拷 handoff.md 进 commands/。
 setup_sandbox
 run_install --opencode > /dev/null 2>&1
 assert_file_exists "C3: OpenCode skills 安装" \
     "$SANDBOX/.config/opencode/skills/handoff/SKILL.md"
 assert_file_exists "C3: OpenCode handoff.md shim（OpenCode 必须显式注册主命令）" \
-    "$SANDBOX/.config/opencode/command/handoff.md"
+    "$SANDBOX/.config/opencode/commands/handoff.md"
 assert_file_exists "C3: OpenCode handoff-recall shim 安装" \
-    "$SANDBOX/.config/opencode/command/handoff-recall.md"
+    "$SANDBOX/.config/opencode/commands/handoff-recall.md"
 assert_file_exists "C3: OpenCode handoff-tidy shim 安装" \
-    "$SANDBOX/.config/opencode/command/handoff-tidy.md"
+    "$SANDBOX/.config/opencode/commands/handoff-tidy.md"
 assert_file_exists "C3: OpenCode handoff-memory shim 安装" \
-    "$SANDBOX/.config/opencode/command/handoff-memory.md"
+    "$SANDBOX/.config/opencode/commands/handoff-memory.md"
 assert_file_exists "C3: OpenCode handoff-init shim 安装" \
-    "$SANDBOX/.config/opencode/command/handoff-init.md"
-if [ -d "$SANDBOX/.config/opencode/commands" ] && \
-   ls "$SANDBOX/.config/opencode/commands/handoff"*.md >/dev/null 2>&1; then
-    echo "  ❌ C3: OpenCode commands/（复数，旧路径）不该残留 handoff*.md"
+    "$SANDBOX/.config/opencode/commands/handoff-init.md"
+# 反向检查：单数 command/ 是 v2.1.3 前的旧路径，新装应该不存在 handoff* 残留
+if [ -d "$SANDBOX/.config/opencode/command" ] && \
+   ls "$SANDBOX/.config/opencode/command/handoff"*.md >/dev/null 2>&1; then
+    echo "  ❌ C3: OpenCode command/（单数，v2.1.3 前的旧路径）不该残留 handoff*.md"
     FAIL=$((FAIL+1))
 else
-    echo "  ✅ C3: OpenCode commands/（复数）无 handoff 残留（正确）"
+    echo "  ✅ C3: OpenCode command/（单数）无 handoff 残留（正确）"
     PASS=$((PASS+1))
 fi
 if [ -d "$SANDBOX/.claude/skills/handoff" ]; then
@@ -176,7 +180,7 @@ setup_sandbox
 run_install --codex > /dev/null 2>&1
 assert_file_exists "C4: Codex skills 安装" \
     "$SANDBOX/.agents/skills/handoff/SKILL.md"
-for cmd_file in "$SKILL_SRC"/commands/*.md; do
+for cmd_file in "$SKILL_SRC"/command-shims/*.md; do
     cmd_name=$(basename "$cmd_file" .md)
     assert_file_exists "C4: Codex \$${cmd_name} alias" \
         "$SANDBOX/.agents/skills/$cmd_name/SKILL.md"
@@ -186,7 +190,7 @@ assert_contains "C4: Codex recall alias points to parent skill" \
     "Use skill: handoff"
 assert_skill_frontmatter_valid "C4: Codex recall alias frontmatter is valid YAML" \
     "$SANDBOX/.agents/skills/handoff-recall/SKILL.md"
-for cmd_file in "$SKILL_SRC"/commands/*.md; do
+for cmd_file in "$SKILL_SRC"/command-shims/*.md; do
     cmd_name=$(basename "$cmd_file" .md)
     assert_codex_command_available "C4: Codex \$${cmd_name} usable" "$SANDBOX" "$cmd_name"
 done

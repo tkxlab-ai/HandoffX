@@ -121,6 +121,7 @@
 - **关联 Gotcha**：#9（OpenCode 命令路径 commands/→command/，与本条互补）
 
 ### Gotcha #9 — `[build]` OpenCode 命令注册：单数 `command/` + 必须显式 shim 主命令
+> ⚠️ **OBSOLETE since v2.1.3** — "OpenCode 用单数 `command/`" 的结论仅对 v1.2.x 有效；OpenCode v1.14+ canonical 是**复数** `commands/`（同步官方文档 `opencode.ai/docs/commands`），install.sh v2.1.3 起跟随官方写复数。OpenCode v1.14+ 双路径都读但**不去重**，所以安装时必须清掉旧单数残留。"必须显式 shim 主命令"部分仍然成立。完整教训见 **Gotcha #16**。
 - **症状**：v1.2.5 装到 OpenCode 后，`/handoff` / `/handoff-recall` / `/handoff-tidy` / `/handoff-memory` / `/handoff-init` 全都不出现在 OpenCode 命令面板。`~/.config/opencode/skills/handoff/` 是新版 v1.2.5 没错；`~/.config/opencode/commands/` 里也有 4 个 shim——但 OpenCode 看不到它们。
 - **根因**：两条互锁的差异，每条单独都会让命令消失：
   1. **路径约定**：OpenCode 读 `~/.config/opencode/command/`（**单数**），install.sh 写到 `commands/`（**复数**）。OpenCode 自带的 68 条预存命令都在 `command/`；`commands/` 是 install.sh 自创的不存在的目录
@@ -173,5 +174,40 @@
 - **关联 Dev Log**：0042（v2.1.2 实施 + Ubuntu 22.04 真机验证）
 - **关联 Decision**：0016（C 全修 vs A 仅文档化 vs B 部分修 选项推理）
 - **关联 Gotcha**：#1（grep `-` 选项）+ #3（bash 3.2 set -u 空数组）+ #4（macOS date -v 语法）—— 跨平台兼容性的同类盲点；POSIX-strict 实现暴露 BSD/GNU 扩展依赖
+
+### Gotcha #16 — `[build]` 对照官方现行规范定期重新校准 — 上游约定会改 + skill spec 偏离会累积
+- **症状**（四 case study）：
+  1. **OpenCode dir convention drift**：Gotcha #9（2026-05-06，v1.2.6 era）记录"OpenCode 读单数 `command/`，install.sh 必须写单数"。2026-05-11 实战观察期 Boss 报 OpenCode "commands/ 目录为空"——OpenCode v1.14.41 现在 canonical 是**复数** `commands/`（官方文档 `opencode.ai/docs/commands` 只提复数）。install.sh 沿用 5 天前的 Gotcha 结论已经过时。OpenCode v1.14+ 双路径都读但**不去重**（如 install 双写会出现 5+5=10 个 /handoff palette 重复）
+  2. **Skill spec 偏离累积**：项目对照 `code.claude.com/docs/en/skills` 检查 handoff skill 结构，发现 ~3 处偏离官方推荐：
+     - SKILL.md frontmatter 仅设 `name` + `description`，未利用 docs 列出的 `when_to_use`/`argument-hint`/`disable-model-invocation` 等字段
+     - `skills/handoff/commands/` 命名误导：spec 明文"Custom commands have been merged into skills... `.claude/commands/` files still work"——skill 内部 `commands/` 子目录**不是 Claude Code 读取路径**（Gotcha #5 已记，install.sh 必须剥离），但命名让人误以为是。`agents/codex-commands.txt` 同类问题（Claude Code agents 不读 skill 内 `agents/`）
+  3. **docs.claude.com vs skill-creator validator 矛盾**：v2.1.3 尝试加 `when_to_use` 字段（docs 列为合法）→ `gitx-release` 调 `~/.claude/plugins/cache/claude-plugins-official/skill-creator/.../scripts/package_skill.py` 打包 → validator 报 `Unexpected key(s) in SKILL.md frontmatter: when_to_use. Allowed properties are: allowed-tools, compatibility, description, license, metadata, name`。**docs 与 packager 互相矛盾**：docs 列 ~12 字段，validator 只认 6 字段。说明 docs 描述的是 Claude Code 运行时（loader）支持的最大集合；skill-creator 实现的是分发标准（很可能 `agentskills.io` 开放标准）的最小集合。**跨工具分发的 skill 必须按 validator 的 6 字段子集约束**
+  4. **gitx-release `agents/` 是 Codex 契约非 Claude Code 规范**：v2.1.3 初始计划把 `skills/handoff/agents/codex-commands.txt` 移到 `assets/`（理由：Anthropic Skills docs 不识别 skill 内 `agents/`）→ gitx-release `release-audit.sh:561,614` 强制要求 `.skill 含 agents/codex-commands.txt` 作 **Codex \$ 命令 selector manifest**——这是项目自身 release pipeline 的硬契约。Anthropic docs 不识别 ≠ 项目 release tool 不识别。**移动前必须 grep release tool 是否引用此路径**（gitx-release line 561）；B2 计划撤回，agents/codex-commands.txt 保留原位 + 注释说明用途
+- **根因**：
+  1. 上游 CLI 工具（OpenCode / Claude Code / Codex）的目录约定 / 默认行为 / API 会随版本迁移。**当时正确的发现 5 天后就过时**——靠人脑记忆 + 不主动校准 = 必然漂移
+  2. skill 结构惯例从最初实现到现在累积了多个"当时对但现在应优化"的项（commands/ subdir 名 + agents/ subdir 名 + frontmatter 单字段）。**这些不是 bug，是 drift**——功能 OK 但偏离官方推荐
+  3. 同一类盲点（Gotcha #14 K4 chicken-egg、Gotcha #15 mawk regex）都源于"靠理论推断而不机械验证"：本条把这条规律泛化到所有上游约定 + 官方规范跟踪
+- **方案**：
+  - **每个 release 周期对照官方文档一次**：fetch `code.claude.com/docs/en/skills` + `opencode.ai/docs/commands` + Codex skills 路径官方页，对照本项目结构差异；偏离的项分 funcional（必修）vs cosmetic（按 ROI）
+  - **机械验证 > 文字推断**：要确定上游某约定是否仍生效，**直接 probe**（拷一份测试文件到目标路径，运行 `<cli> debug config` 等命令）而不是"我记得 5 天前是这样"
+  - **OpenCode 双路径迁移模板**（v2.1.3 实施，可复用未来上游约定变更）：
+    1. fetch 官方文档确认 canonical 路径
+    2. 机械 probe：在新路径放测试文件，confirm CLI 识别
+    3. install.sh：新路径写 + 旧路径清（双路径不去重时尤其重要）
+    4. uninstall：双路径都清（前向兼容旧版本残留）
+    5. 老 Gotcha 加 obsolete 标记 + 引用新 Gotcha；新 Gotcha 引用证据来源（官方 URL + probe 结果 + 验证版本号）
+  - **Skill spec compliance 模板**（v2.1.3 实施，按 skill-creator validator 的 6 字段子集约束）：
+    1. **frontmatter** 只用 `name` + `description`（+ 可选 `license`/`allowed-tools`/`metadata`/`compatibility`）；**不要**用 `when_to_use`/`argument-hint`/`disable-model-invocation`/`paths` 等仅 Claude Code 运行时支持但 skill-creator validator 拒绝的字段。description 项目 budget ≤160 chars，validator cap ≤1024 chars；trigger 关键词压进 description，详细 when-to-use 写到 SKILL.md body 的 `## 何时触发` 段
+    2. **subdirectory naming**：`scripts/` / `references/` / `assets/` 是 spec 友好；`commands/` / `agents/` 在 skill 内是 anti-pattern（Claude Code 不读，会与 first-class concept 冲突）—— 改为 `command-shims/` / 移到 `assets/` 让职责显式
+    3. **disable-model-invocation** 想用但不能用：docs 列了，validator 拒绝。靠 description 措辞 + 用户主动 `/cmd` 调用控制
+    4. **`${CLAUDE_SKILL_DIR}` substitution**：跨 CLI 安装时让 skill 引用自己的 scripts/ 不靠 cwd
+- **教训**：
+  - **任何"今天对"的发现都需要标注证据 + 验证日期**——Gotcha 不是"永久真理"，是"截至某日某版本观察到的事实"。Gotcha 标题 / body 写明发现时上游版本（如本条 OpenCode v1.14.41 + Claude Code skills docs `code.claude.com/docs/en/skills` 截至 2026-05-11）
+  - **官方规范 > 工具内部约定**：项目 install.sh 内的 convention（如"OpenCode 用单数"）只是当时正确的工具策略，不是上游真相。官方文档才是真相源；当二者矛盾时**默认信官方**，除非 probe 确认官方文档已过时
+  - **5 个发现里 4 个是 "上游迁移引发的项目惯性"**：Gotcha #9（v1.2.6 OpenCode）/ #10（v1.2.7 跨 CLI shim wording）/ #11（v1.2.8 跨 CLI 路径）/ #16 本条（v2.1.3 OpenCode 反转 + skill spec polish）—— 都是上游约定漂移导致项目代码落后。**release-cycle 加一项"跨 CLI 官方文档复查"check** 能把这类问题前置发现
+- **关联 Dev Log**：0043（v2.1.3 实施 — OpenCode commands/ 迁复数 + commands/ → command-shims/ + agents/codex-commands.txt → assets/ + frontmatter 扩展）
+- **关联 Decision**：0017（拒 C 不动 / 拒 B 仅文档 / 选 D 全套 polish 推理）
+- **关联 Gotcha**：#9（obsolete since v2.1.3，本条 supersedes）+ #14（K4 chicken-egg，"机械验证 > 理论推断"母 lesson）+ #15（mawk POSIX，跨实现兼容同根）+ #5（Claude Code 三源注册，"skill 内 commands/ 不是读取路径"母 lesson）
+- **证据来源**：`code.claude.com/docs/en/skills` 截至 2026-05-11 / `opencode.ai/docs/commands` 截至 2026-05-11 / `opencode debug config` 机械 probe（v1.14.41） / Anthropic skills GitHub `github.com/anthropics/skills`
 
 ---

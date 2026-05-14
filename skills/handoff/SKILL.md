@@ -1,6 +1,6 @@
 ---
 name: handoff
-description: 把项目交接写进 HANDOFF.md，供同事或未来接手
+description: 把项目交接写成 HANDOFF.md + 三件套供同事接手；写 Dev Log / Decision / Gotcha / recall 项目状态。Use for /handoff* commands and project handoff work.
 ---
 
 # Handoff — 项目级交接文档系统（v2 多文件布局）

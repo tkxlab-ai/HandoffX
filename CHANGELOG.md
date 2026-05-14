@@ -2,6 +2,58 @@
 
 记录各版本的关键变化。最新版本在最上面。
 
+## v2.1.3 — 2026-05-11
+
+**Theme: Skill spec compliance polish + OpenCode dir convention drift fix.**
+
+### Why
+
+实战观察期连发两个 patch（v2.1.1 K4 + v2.1.2 Linux）后，Boss 让对照官方 Skill 文档检查 handoff 架构合规性。fetch `code.claude.com/docs/en/skills` + `github.com/anthropics/skills` + `opencode.ai/docs/commands` 后发现两条独立痛点：
+
+1. **OpenCode dir convention drift**（functional）：Gotcha #9（2026-05-06，v1.2.6 era）记录的"OpenCode 用单数 `command/`"在 v1.14.41 已过时——官方文档只提复数 `commands/`。OpenCode v1.14+ 双路径都读但**不去重**，install.sh 沿用过时 Gotcha 结论 = 用户报"commands/ 目录为空"。
+2. **Skill spec 偏离累积**（cosmetic）：`skills/handoff/commands/` 命名误导（spec 明文"commands/ 在 skill 内不是 Claude Code 读取路径"，install.sh 必须剥离，Gotcha #5）；`agents/codex-commands.txt` 误用（Claude Code agent 路径不在 skill 内）；SKILL.md frontmatter 只设 description，未利用 spec 推荐的 `when_to_use`（trigger discoverability 不足）。
+
+两条根因同：**项目对照官方现行规范缺乏周期性校准**。Gotcha #16 沉淀这条规律。
+
+### Key changes
+
+- **install.sh + dual-source**：
+  - OpenCode `target_commands`: `command/` → `commands/`（全局 line 481 + 项目级 line 424）跟随官方文档
+  - 双路径残留清理：install-time 清掉**单数 `command/`** AND **复数 `commands/`**（防 5+5=10 palette 重复，OpenCode v1.14+ 不去重）
+  - `SKILL_SRC/commands/` → `SKILL_SRC/command-shims/`（5 处引用）
+  - Bootstrap-time `commands → command-shims` rename（line 141-148）：让 v2.1.2 及更早的 .skill 包仍可被 v2.1.3 install.sh 自举
+- **目录改名**:
+  - `git mv skills/handoff/commands skills/handoff/command-shims`（命名澄清——shim 源镜像而非 Claude Code 读取路径）
+  - `git mv skills/handoff/agents/codex-commands.txt skills/handoff/assets/codex-commands.txt` + 删除空 `agents/` 目录
+- **`skills/handoff/SKILL.md` frontmatter**:
+  - `description` 适度扩展（≤160 chars 项目 budget；≤1024 chars skill-creator validator cap）+ 中英双语关键词；trigger 信息压进 description，**未加 `when_to_use`**——理由见下方"跨工具分发约束"
+- **关键发现 — Claude Code docs vs skill-creator validator 互相矛盾**:
+  - `code.claude.com/docs/en/skills` 列 `when_to_use`/`argument-hint`/`disable-model-invocation`/`paths` 等 ~12 字段为合法 frontmatter
+  - `gitx-release` 调的 Anthropic 官方 `skill-creator` validator（`~/.claude/plugins/cache/claude-plugins-official/skill-creator/.../scripts/package_skill.py`）只认 6 字段：`name / description / license / allowed-tools / metadata / compatibility`
+  - **结论**：docs 描述 Claude Code 运行时（loader）支持的最大集合；skill-creator 实现分发标准（很可能 `agentskills.io` 开放标准）的最小集合。**跨工具分发的 skill 必须按 6 字段子集约束**（详见 Gotcha #16 case study #3）
+- **测试同步**:
+  - `tests/test_install.sh` C3 OpenCode shim 断言改 `commands/`（复数）；反向 residue 检查改单数；C4 SKILL_SRC 改 `command-shims/`；C10 .skill bootstrap 因 install.sh 已加 commands→command-shims 自动 rename 而通过
+  - `tests/test_bundle_sync.sh` BUNDLE_CMDS 改 `command-shims/`
+  - `release.sh` dry-run-audit 路径引用同步
+- **知识资产**:
+  - `GOTCHAS.md` Gotcha #9 加 **OBSOLETE since v2.1.3** 标记 + 引用 #16
+  - +Gotcha #16（对照官方现行规范定期校准 + 跨 CLI 双路径迁移模板 + skill spec compliance 模板 + 5 个 release-cycle 发现的"上游 drift" 历史）
+  - +Decision 0017（拒 B 仅文档 / C 不动，选 D 全套 polish 推理）
+- `HANDOFF.md` Milestones / Current State / pointer counters 同步
+
+### Backward compatibility
+
+100% 兼容：
+- 旧 .skill 包（v2.1.2-）bootstrap 自动 commands → command-shims rename，安装行为不变
+- 旧版 OpenCode 安装残留双路径清理（install.sh + uninstall）
+- macOS bash 3.2 24/24 ✅ + Ubuntu 22.04 mawk 24/24 ✅ 双绿基线保持
+
+### Not in v2.1.3（保持推延 v2.2.0）
+
+- race-free migration / pointer regen via flock — 维持 Decision 0013 推延
+
+---
+
 ## v2.1.2 — 2026-05-11
 
 **Theme: Linux compatibility — mawk regex POSIX 化 + chmod-on-root skip；Ubuntu 22.04 容器实测 24/24 ✅。**

@@ -147,6 +147,14 @@ if [ ! -d "$SKILL_SRC" ]; then
     exit 1
 fi
 
+# v2.1.3 backward compat: 旧 .skill / source tarball（v2.1.2 及更早）的 shim 源
+# 目录叫 commands/；v2.1.3 起改名 command-shims/（让"这是 install.sh 的 shim 源
+# 镜像，不是 Claude Code 直读路径"明示，Gotcha #5 同根）。从旧包 bootstrap 时
+# 自动迁名，让下游 install_to_dir / install_codex_aliases 统一只看 command-shims/。
+if [ ! -d "$SKILL_SRC/command-shims" ] && [ -d "$SKILL_SRC/commands" ]; then
+    mv "$SKILL_SRC/commands" "$SKILL_SRC/command-shims"
+fi
+
 # ── 参数解析 ─────────────────────────────────────────────────────────────────
 
 MODE="auto"        # auto = 安装到所有检测到的 CLI
@@ -208,18 +216,18 @@ install_to_dir() {
     mkdir -p "$target_skills"
     rm -rf "$target_skills/handoff"
     cp -r "$SKILL_SRC" "$target_skills/handoff"
-    # 不要把 commands/ 留在 skill 目录里——它只是 slash shim 的源镜像，
-    # Claude Code 会把它当成额外的命令登记，导致 palette 里 /handoff 重复出现。
-    # shim 已经由下方 if 块单独拷到 ~/.claude/commands/（或对应 CLI 的 commands 目录），
-    # 所以此处安全剥离。
-    rm -rf "$target_skills/handoff/commands"
+    # 不要把 command-shims/ 留在 skill 目录里——它只是 slash shim 的源镜像，
+    # Claude Code 会把 skill 内部 commands/ 当成额外命令登记（Gotcha #5）。
+    # v2.1.3 起源目录改名 command-shims/ 让职责更清楚——但仍要剥离，同时清掉
+    # v2.1.2 及更早 installed copy 中残留的 commands/（防 in-place 升级残留）。
+    rm -rf "$target_skills/handoff/command-shims" "$target_skills/handoff/commands"
     chmod +x "$target_skills/handoff/scripts/"*.sh 2>/dev/null || true
 
     local ver
     ver=$(grep "^# " "$target_skills/handoff/SKILL.md" 2>/dev/null | head -1 | sed 's/^# //' || echo "unknown")
     echo "  ✅ [$cli_name] Skill → $target_skills/handoff/  [$ver]"
 
-    if [ -n "$target_commands" ] && [ -d "$SKILL_SRC/commands" ]; then
+    if [ -n "$target_commands" ] && [ -d "$SKILL_SRC/command-shims" ]; then
         mkdir -p "$target_commands"
         # 默认装 recall / tidy / memory / init 四个 shim。/handoff 是否需要单独 shim
         # 取决于 CLI：Claude Code 从 SKILL.md `name: handoff` 自动注册，再拷 handoff.md
@@ -230,7 +238,7 @@ install_to_dir() {
             *OpenCode*) cmds+=(handoff.md) ;;
         esac
         for cmd in "${cmds[@]}"; do
-            [ -f "$SKILL_SRC/commands/$cmd" ] && cp "$SKILL_SRC/commands/$cmd" "$target_commands/$cmd"
+            [ -f "$SKILL_SRC/command-shims/$cmd" ] && cp "$SKILL_SRC/command-shims/$cmd" "$target_commands/$cmd"
         done
         # Claude Code 路径主动删旧版残留的 handoff.md（防重复）
         case "$cli_name" in
@@ -259,10 +267,10 @@ yaml_single_quote() {
 install_codex_aliases() {
     local target_skills="$1"
 
-    [ -d "$SKILL_SRC/commands" ] || return 0
+    [ -d "$SKILL_SRC/command-shims" ] || return 0
     mkdir -p "$target_skills"
 
-    for cmd_path in "$SKILL_SRC"/commands/*.md; do
+    for cmd_path in "$SKILL_SRC"/command-shims/*.md; do
         [ -f "$cmd_path" ] || continue
         local cmd_name
         cmd_name=$(basename "$cmd_path" .md)
@@ -282,7 +290,7 @@ install_codex_aliases() {
             echo ""
             echo "Use skill: handoff."
             echo ""
-            echo "This Codex alias mirrors \`skills/handoff/commands/$cmd_name.md\` so \`\$$cmd_name\` works like \`/$cmd_name\` in Claude Code / OpenCode."
+            echo "This Codex alias mirrors \`skills/handoff/command-shims/$cmd_name.md\` so \`\$$cmd_name\` works like \`/$cmd_name\` in Claude Code / OpenCode."
             echo ""
             awk '
                 BEGIN { state = "body" }
@@ -411,13 +419,17 @@ if [ "$MODE" = "project" ]; then
     if command -v opencode >/dev/null 2>&1; then
         echo ""
         echo "📦 项目级安装 → $PROJECT_ABS/.opencode/"
-        # 清理 v1.2.5 及之前误装到 commands/（复数）的项目级残留
+        # 双路径旧版残留清理：v1.2.5 时代误写 commands/（复数）/ v1.2.6–v2.1.2
+        # 时代写 command/（单数，OpenCode 当时 canonical）/ v2.1.3 起跟随官方文档
+        # 写 commands/（复数）。OpenCode v1.14+ 双路径都读但**不去重**，所以两个
+        # 都清才不会出现 5+5=10 个 /handoff 重复（同根 Gotcha #5 / Gotcha #9）。
         for cmd in handoff.md handoff-recall.md handoff-tidy.md handoff-memory.md handoff-init.md; do
+            [ -f "$PROJECT_ABS/.opencode/command/$cmd" ]  && rm -f "$PROJECT_ABS/.opencode/command/$cmd"
             [ -f "$PROJECT_ABS/.opencode/commands/$cmd" ] && rm -f "$PROJECT_ABS/.opencode/commands/$cmd"
         done
         install_to_dir \
             "$PROJECT_ABS/.opencode/skills" \
-            "$PROJECT_ABS/.opencode/command" \
+            "$PROJECT_ABS/.opencode/commands" \
             "OpenCode (project)"
     fi
     if command -v codex >/dev/null 2>&1; then
@@ -467,13 +479,14 @@ if [ "$MODE" = "auto" ] || [ "$MODE" = "explicit" ]; then
     if [ "$TARGET_OPENCODE" = "1" ]; then
         OC_DIR=$(opencode_config_dir)
         echo "── OpenCode ($OC_DIR) ──"
-        # 清理 v1.2.5 及之前误装到 commands/（复数）的全局残留
+        # 双路径旧版残留清理（同项目级注释逻辑）
         for cmd in handoff.md handoff-recall.md handoff-tidy.md handoff-memory.md handoff-init.md; do
+            [ -f "$OC_DIR/command/$cmd" ]  && rm -f "$OC_DIR/command/$cmd"
             [ -f "$OC_DIR/commands/$cmd" ] && rm -f "$OC_DIR/commands/$cmd"
         done
         install_to_dir \
             "$OC_DIR/skills" \
-            "$OC_DIR/command" \
+            "$OC_DIR/commands" \
             "OpenCode"
         echo ""
     fi

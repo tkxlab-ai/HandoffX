@@ -95,8 +95,8 @@ audit_staged_source() {
     [ "$fail" = "0" ] && echo "✅ forbidden paths absent"
 
     for cmd in handoff-recall.md handoff-tidy.md handoff-memory.md handoff-init.md; do
-        if [ ! -f "$staged/skills/handoff/commands/$cmd" ]; then
-            echo "❌ required command shim missing: skills/handoff/commands/$cmd" >&2
+        if [ ! -f "$staged/skills/handoff/command-shims/$cmd" ]; then
+            echo "❌ required command shim missing: skills/handoff/command-shims/$cmd" >&2
             fail=1
         fi
     done
@@ -144,10 +144,10 @@ emit_release_manifest() {
         echo "  - NEXT_SESSION_NOTES.md"
         echo "  - memory/"
         echo "required_command_shims:"
-        echo "  - skills/handoff/commands/handoff-recall.md"
-        echo "  - skills/handoff/commands/handoff-tidy.md"
-        echo "  - skills/handoff/commands/handoff-memory.md"
-        echo "  - skills/handoff/commands/handoff-init.md"
+        echo "  - skills/handoff/command-shims/handoff-recall.md"
+        echo "  - skills/handoff/command-shims/handoff-tidy.md"
+        echo "  - skills/handoff/command-shims/handoff-memory.md"
+        echo "  - skills/handoff/command-shims/handoff-init.md"
         echo "sha256:"
         (cd "$staged" && find . -type f | LC_ALL=C sort | while IFS= read -r file; do
             file=${file#./}
