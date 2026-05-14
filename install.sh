@@ -197,8 +197,59 @@ while [ "$#" -gt 0 ]; do
     shift
 done
 
+# ── Unified install banner (TKX standard, v2.2.0) ───────────────────────────
+# Helper provides install_banner_top / install_checkpoint / install_step_ok /
+# install_banner_bottom / install_cli_row + table — same visual as gitx-release
+# v1.5.0 / mac-release v0.2.0 / future TKX skills.
+HANDOFF_SELF_DIR="$(cd "$(dirname "$0")" && pwd)"
+if [ -f "$HANDOFF_SELF_DIR/scripts/lib/install-output-style.sh" ]; then
+    # shellcheck source=scripts/lib/install-output-style.sh
+    source "$HANDOFF_SELF_DIR/scripts/lib/install-output-style.sh"
+elif [ -f "$SKILL_SRC/scripts/lib/install-output-style.sh" ]; then
+    # shellcheck source=skills/handoff/scripts/lib/install-output-style.sh
+    source "$SKILL_SRC/scripts/lib/install-output-style.sh"
+else
+    # Graceful degradation: when bootstrap-mode extracts an older .skill bundle
+    # (pre-v2.2.0) that predates the unified install-output-style.sh helper,
+    # define no-op stubs so the install proceeds with legacy echo style. The
+    # next install (which uses a v2.2.0+ bundle) gets the full unified banner.
+    install_style_init()      { :; }
+    install_banner_top()      { echo "📦 handoff installer ${1:-} ${2:-} (legacy mode)"; }
+    install_checkpoint()      { echo "── ${2:-step} ──"; }
+    install_step_ok()         { echo "  ✅ ${1:-}"; }
+    install_step_warn()       { echo "  ⚠️  ${1:-}" >&2; }
+    install_step_fail()       { echo "  ❌ ${1:-}" >&2; }
+    install_banner_bottom()   { echo "🎉 handoff installer complete"; }
+    install_cli_table_begin() { echo "Installed CLI commands:"; }
+    install_cli_row()         { printf '  [%s] %s  %s\n' "${1:-}" "${2:-}" "${3:-}"; }
+    install_cli_table_end()   { :; }
+    install_next_block()      { echo "Next:"; for h in "$@"; do echo "  • $h"; done; }
+    install_next_hint()       { echo "  • ${1:-}"; }
+    _TKX_E_PKG="📦"; _TKX_E_LOCK="🔐"; _TKX_E_SEARCH="🔍"; _TKX_E_DIR="📂"
+    _TKX_E_LINK="🔗"; _TKX_E_BROOM="🧹"; _TKX_E_CHECK="✓"; _TKX_E_OK="✅"
+    _TKX_E_WARN="⚠️"; _TKX_E_FAIL="❌"; _TKX_E_PARTY="🎉"
+fi
+_HANDOFF_VERSION="$(tr -d '[:space:]' < "$HANDOFF_SELF_DIR/VERSION" 2>/dev/null \
+    || tr -d '[:space:]' < "$SKILL_SRC/VERSION" 2>/dev/null \
+    || echo unknown)"
+if [ "$UNINSTALL" = "1" ]; then
+    _HANDOFF_MODE="uninstall"
+elif [ "$DRY_RUN" = "1" ]; then
+    _HANDOFF_MODE="--dry-run"
+elif [ -n "$PROJECT" ]; then
+    _HANDOFF_MODE="install --project $PROJECT"
+elif [ "$MODE" = "explicit" ]; then
+    _HANDOFF_MODE="install (explicit targets)"
+else
+    _HANDOFF_MODE="install (auto)"
+fi
+install_style_init 0
+install_banner_top "handoff" "$_HANDOFF_VERSION" "$_HANDOFF_MODE" "$HANDOFF_SELF_DIR"
+
 if [ "$DRY_RUN" = "1" ]; then
-    echo "DRY RUN: install targets parsed successfully; no filesystem changes performed."
+    install_checkpoint "$_TKX_E_SEARCH" "Dry-run preview"
+    install_step_ok "Targets parsed successfully; no filesystem changes performed."
+    install_banner_bottom "handoff" "$_HANDOFF_VERSION (dry-run)"
     exit 0
 fi
 [ "$FORCE" = "1" ] && true
@@ -211,6 +262,11 @@ if [ "$MODE" = "auto" ]; then
     # 即使未检测到 claude，默认也装 Claude Code（最常见场景）
     TARGET_CLAUDE=1
 fi
+
+install_checkpoint "$_TKX_E_SEARCH" "Preflight: targets detected"
+[ "$TARGET_CLAUDE" = "1" ]   && install_step_ok "Claude Code   targeted"
+[ "$TARGET_OPENCODE" = "1" ] && install_step_ok "OpenCode      targeted"
+[ "$TARGET_CODEX" = "1" ]    && install_step_ok "Codex CLI     targeted"
 
 # ── 工具函数 ─────────────────────────────────────────────────────────────────
 
@@ -454,6 +510,7 @@ fi
 # ── 安装：全局 ────────────────────────────────────────────────────────────────
 
 if [ "$MODE" = "auto" ] || [ "$MODE" = "explicit" ]; then
+    install_checkpoint "$_TKX_E_DIR" "Global install"
     echo "📦 全局安装 Handoff Skill"
     echo "   平台: $PLATFORM"
     echo ""
@@ -526,18 +583,18 @@ if [ -n "$TEMPLATE_TARGET" ]; then
     fi
 fi
 
-# ── 完成提示 ─────────────────────────────────────────────────────────────────
+# ── Unified completion banner (TKX standard) ────────────────────────────────
 
-echo "下一步："
-if [ "$TARGET_CLAUDE" = "1" ]; then
-    echo "  [Claude Code]  输入 /handoff、/handoff-init、/handoff-recall、/handoff-tidy、/handoff-memory"
-fi
-if [ "$TARGET_OPENCODE" = "1" ]; then
-    echo "  [OpenCode]     输入 /handoff、/handoff-init、/handoff-recall、/handoff-tidy、/handoff-memory"
-fi
-if [ "$TARGET_CODEX" = "1" ]; then
-    echo "  [Codex]        输入 \$handoff、\$handoff-init、\$handoff-recall、\$handoff-tidy、\$handoff-memory"
-fi
-echo ""
-echo "  首次使用：编辑 HANDOFF.md 填 Project Overview + Architecture"
-echo "  做完工作 → /handoff 留痕 | 接手项目 → /handoff-recall | 整理 → /handoff-tidy"
+install_checkpoint "$_TKX_E_CHECK" "Validation"
+install_step_ok "All targeted CLIs received the handoff skill"
+
+install_banner_bottom "handoff" "$_HANDOFF_VERSION"
+install_cli_table_begin
+[ "$TARGET_CLAUDE" = "1" ]   && install_cli_row "Claude Code" "/handoff"          "$(claude_config_dir)/skills/handoff"
+[ "$TARGET_OPENCODE" = "1" ] && install_cli_row "OpenCode"    "/handoff"          "$(opencode_config_dir)/skills/handoff"
+[ "$TARGET_CODEX" = "1" ]    && install_cli_row "Codex CLI"   "\$handoff"          "$(codex_config_dir)/skills/handoff"
+install_cli_table_end
+install_next_block \
+    "Run /handoff-init in a project root to create the v2 four-file scaffold" \
+    "Run /handoff-recall to read an existing HANDOFF.md and report status" \
+    "Sub-commands: \$handoff-init / \$handoff-recall / \$handoff-tidy / \$handoff-memory"

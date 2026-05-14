@@ -305,10 +305,10 @@ handoff/
 ├── tests/                    ← 回归测试（26 套件，含 v2 schema / migrate / recall contract / postflight / K4 chicken-egg guard）
 └── Release/
     ├── CHANGELOG.md          ← 版本历史
-    ├── latest → handoff-v2.1.5             ← 软链接
-    └── handoff-v2.1.5/
-        ├── handoff-v2.1.5.skill            ← 单文件分发
-        ├── handoff-v2.1.5-source.tar.gz    ← 源码包
+    ├── latest → handoff-v2.2.0             ← 软链接
+    └── handoff-v2.2.0/
+        ├── handoff-v2.2.0.skill            ← 单文件分发
+        ├── handoff-v2.2.0-source.tar.gz    ← 源码包
         └── RELEASE_NOTES.md
 ```
 
