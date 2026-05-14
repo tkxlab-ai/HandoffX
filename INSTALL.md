@@ -31,7 +31,7 @@
 │   ├── SKILL.md                 # skill 入口
 │   ├── references/*.md          # 命令详细规范
 │   ├── scripts/*.sh             # 安全扫描 / 结构整理 / 内存同步等脚本
-│   ├── commands/*.md            # slash command shims
+│   ├── command-shims/*.md       # slash command shims（v2.1.3 起改名，原 commands/）
 │   └── assets/HANDOFF.template.md
 └── commands/                    # Slash shims（让各子命令不被 fuzzy 成 /handoff）
     ├── handoff-recall.md        #   /handoff 本身由 skill name 注册，无需 shim
@@ -116,8 +116,8 @@ unzip -o ./handoff-v<版本>.skill -d ~/.claude/skills/
 chmod +x ~/.claude/skills/handoff/scripts/*.sh
 
 # 安装 slash command shims（/handoff 由 skill name 注册，其余入口从 command-shims/ 复制；v2.1.3 起改名，原 commands/）
-cp ~/.claude/skills/handoff/commands/handoff-{recall,tidy,memory}.md ~/.claude/commands/
-cp ~/.claude/skills/handoff/commands/handoff-init.md ~/.claude/commands/
+cp ~/.claude/skills/handoff/command-shims/handoff-{recall,tidy,memory}.md ~/.claude/commands/
+cp ~/.claude/skills/handoff/command-shims/handoff-init.md ~/.claude/commands/
 ```
 
 > v0.9.3+ 起，`.skill` 内已内置 `commands/`，直接复制即可，无需手动写文件。
@@ -132,8 +132,8 @@ cp ~/.claude/skills/handoff/commands/handoff-init.md ~/.claude/commands/
 # 全局
 cp -r skills/handoff ~/.claude/skills/handoff
 chmod +x ~/.claude/skills/handoff/scripts/*.sh
-cp skills/handoff/commands/handoff-{recall,tidy,memory}.md ~/.claude/commands/
-cp skills/handoff/commands/handoff-init.md ~/.claude/commands/
+cp skills/handoff/command-shims/handoff-{recall,tidy,memory}.md ~/.claude/commands/
+cp skills/handoff/command-shims/handoff-init.md ~/.claude/commands/
 
 # 项目级
 cp -r skills/handoff /path/to/project/.claude/skills/handoff
@@ -230,8 +230,8 @@ git pull                  # 拉最新
 ```bash
 unzip -o ./handoff-v<版本>.skill -d ~/.claude/skills/
 chmod +x ~/.claude/skills/handoff/scripts/*.sh
-cp ~/.claude/skills/handoff/commands/handoff-{recall,tidy,memory}.md ~/.claude/commands/
-cp ~/.claude/skills/handoff/commands/handoff-init.md ~/.claude/commands/
+cp ~/.claude/skills/handoff/command-shims/handoff-{recall,tidy,memory}.md ~/.claude/commands/
+cp ~/.claude/skills/handoff/command-shims/handoff-init.md ~/.claude/commands/
 ```
 
 然后 `/reload-plugins`。
@@ -388,7 +388,7 @@ bash ~/.claude/skills/handoff/scripts/tidy-handoff.sh HANDOFF.md
 
 ```bash
 cd ~/handoff-src
-# bash tests/run_all.sh      # 当前：17 套件 / 296 断言全过
+# bash tests/run_all.sh      # 当前：26 套件 / 591 断言全过
 bash tests/run_all.sh
 ```
 

@@ -299,16 +299,16 @@ handoff/
 │   │   └── validate-skill-metadata.sh
 │   ├── assets/
 │   │   └── HANDOFF.template.md    ← 新项目起点
-│   ├── commands/             ← slash command shims
+│   ├── command-shims/        ← slash command shims（v2.1.3 起改名，原 `commands/`）
 │   └── evals/                ← 评估场景定义
 ├── scripts/                  ← 开发版脚本（与 skill 内副本同步）
-├── tests/                    ← 回归测试（24 套件，含 v2 schema / migrate / recall contract / postflight / K4 chicken-egg guard）
+├── tests/                    ← 回归测试（26 套件，含 v2 schema / migrate / recall contract / postflight / K4 chicken-egg guard）
 └── Release/
     ├── CHANGELOG.md          ← 版本历史
-    ├── latest → handoff-v2.1.4             ← 软链接
-    └── handoff-v2.1.4/
-        ├── handoff-v2.1.4.skill            ← 单文件分发
-        ├── handoff-v2.1.4-source.tar.gz    ← 源码包
+    ├── latest → handoff-v2.1.5             ← 软链接
+    └── handoff-v2.1.5/
+        ├── handoff-v2.1.5.skill            ← 单文件分发
+        ├── handoff-v2.1.5-source.tar.gz    ← 源码包
         └── RELEASE_NOTES.md
 ```
 

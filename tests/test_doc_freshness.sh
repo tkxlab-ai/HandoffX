@@ -94,7 +94,7 @@ fi
 # ── Test 7: recall N<=0 语义统一为拒绝，不回默认 ──
 if grep -RInE '非正整数.*回默认|0 / 负数.*回退|N=0 / 负数.*回退' \
     "$DOC_DIR/skills/handoff/SKILL.md" \
-    "$DOC_DIR/skills/handoff/commands/handoff-recall.md" \
+    "$DOC_DIR/skills/handoff/command-shims/handoff-recall.md" \
     "$DOC_DIR/skills/handoff/references/handoff-recall.md" \
     "$DOC_DIR/TEST-SCENARIOS.md" >/dev/null 2>&1; then
     echo "  ❌ recall N<=0 文档仍含回默认/回退语义"
@@ -188,6 +188,63 @@ if ! grep -q "11 种密钥前缀" "$DOC_DIR/README.md"; then
 else
     echo "  ✅ README.md 凭证前缀数量说明与扫描器一致（11 种）"
     PASS=$((PASS+1))
+fi
+
+# ── Test 15: 测试套件数量声明跨文档一致（structural drift guard, Round 3 review）──
+# Round 3 audit 发现 v2.1.5 之前 HANDOFF/INSTALL/CONTRIBUTING/Mac Project Transfer.md
+# 各自声称 17/19/22 套件，与实际 26 不一致。此测试机械检测 "<N> 套件" pattern，
+# 强制所有 user-facing canonical 文档与实际 ls tests/test_*.sh 数量一致。
+ACTUAL_SUITE_COUNT=$(ls "$DOC_DIR"/tests/test_*.sh 2>/dev/null | wc -l | tr -d ' ')
+suite_drift=0
+# v2.1.5 (Round 7 review C1.R7): scan list 加 README.md——
+# 它是最 user-facing 的 doc，被 INSTALL/HANDOFF/CONTRIBUTING 反向引用，
+# 漏掉就让 file-tree diagram 里的 "<N> 套件" 沉默漂移
+for doc in "$DOC_DIR/README.md" "$DOC_DIR/HANDOFF.md" "$DOC_DIR/INSTALL.md" "$DOC_DIR/CONTRIBUTING.md" "$DOC_DIR/TEST-SCENARIOS.md" "$DOC_DIR/Mac Project Transfer.md"; do
+    [ -f "$doc" ] || continue
+    # 提取所有 "<N> 套件" 出现的正整数 N（排除 "0 套件断言变化" 这类 delta 描述；
+    # `^[1-9][0-9]*` 强制首字非 0 即可——0 不是有效的 count 声称）
+    claimed_counts=$(grep -oE '[0-9]+ 套件' "$doc" | grep -oE '^[1-9][0-9]*' | sort -u)
+    [ -z "$claimed_counts" ] && continue
+    for n in $claimed_counts; do
+        if [ "$n" != "$ACTUAL_SUITE_COUNT" ]; then
+            echo "  ❌ $(basename "$doc"): 声称 '$n 套件'，实际 $ACTUAL_SUITE_COUNT 套件"
+            suite_drift=1
+        fi
+    done
+done
+if [ "$suite_drift" -eq 0 ]; then
+    echo "  ✅ 所有 canonical 文档 '<N> 套件' 声明与实际一致 ($ACTUAL_SUITE_COUNT)"
+    PASS=$((PASS+1))
+else
+    FAIL=$((FAIL+1))
+fi
+
+# ── Test 16: <N>/<N> ✅ 平台兼容性声称 drift guard（v2.1.5，Round 7 I1+I2+I3）──
+# HANDOFF.md / CHANGELOG.md / Mac Project Transfer.md 的 current-state slot
+# 用 "X/Y ✅" 表示 "X 通过 of Y 套件"。X==Y 时是平台兼容声明，必须等于当前
+# 套件数；不限制 X<Y（partial pass，可能合法）。**仅扫 canonical living docs**——
+# Handoff_Logs/ 是 immutable session 记录，CHANGELOG 历史 release 段 author-time
+# 数据可能与现在不同；只检测 HANDOFF.md current-state + Mac Project Transfer
+# 当前状态描述
+xy_drift=0
+for doc in "$DOC_DIR/HANDOFF.md" "$DOC_DIR/Mac Project Transfer.md"; do
+    [ -f "$doc" ] || continue
+    # 抓 "X/Y ✅" 模式，提取 X 和 Y
+    while IFS= read -r match; do
+        x="${match%/*}"
+        y="${match#*/}"
+        # 仅检 X==Y 的全过声称
+        if [ "$x" = "$y" ] && [ "$x" != "$ACTUAL_SUITE_COUNT" ]; then
+            echo "  ❌ $(basename "$doc"): 声称 '$match ✅' (X==Y 平台全过)，但实际 $ACTUAL_SUITE_COUNT 套件"
+            xy_drift=1
+        fi
+    done < <(grep -oE '[1-9][0-9]*/[1-9][0-9]* ✅' "$doc" | sed 's/ ✅//' | sort -u)
+done
+if [ "$xy_drift" -eq 0 ]; then
+    echo "  ✅ HANDOFF.md + Mac Project Transfer.md '<N>/<N> ✅' 平台兼容声称与实际一致"
+    PASS=$((PASS+1))
+else
+    FAIL=$((FAIL+1))
 fi
 
 summary

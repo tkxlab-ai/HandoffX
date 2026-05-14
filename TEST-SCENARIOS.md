@@ -350,29 +350,36 @@ sha2=$(md5 -q /tmp/test-project/HANDOFF.md)
 bash tests/run_all.sh
 ```
 
-**当前覆盖率：352 断言 / 19 套件 / 100% 通过**（shellcheck 需本地安装，CI 自动安装），分布：
+**当前覆盖率：591 断言 / 26 套件 / 100% 通过**（shellcheck 需本地安装，CI 自动安装；Linux mawk 需装 `shellcheck ruby unzip rsync locales` + `LANG=C.UTF-8`），分布：
 
 | 套件 | 断言数 | 覆盖 |
 |------|-------|------|
-| `test_archive_devlog.sh` | 18 | 小文件幂等 / 大文件归档 / 边界 / 追加归档 / 自定义阈值 / 错误路径 / duplicate header |
-| `test_bundle_sync.sh` | 26 | commands/ + references/ 存在性 / frontmatter / 内容完整性 / install.sh 引用 |
+| `test_archive_devlog.sh` | 29 | 小文件幂等 / 大文件归档 / 边界 / 追加归档 / 自定义阈值 / 错误路径 / duplicate header / v2 yearly archive |
+| `test_bundle_sync.sh` | 26 | command-shims/ + references/ 存在性 / frontmatter / 内容完整性 / install.sh 引用（v2.1.3 起 commands/ → command-shims/） |
 | `test_ci_workflow.sh` | 6 | GitHub Actions 触发 / shellcheck / 全量测试 / release dry-run audit |
-| `test_doc_freshness.sh` | 14 | 文档版本号 / 测试用例数 / 命令面 / shim 安装说明一致性 / recall 语义 / 文档指纹 / 凭证前缀数量双向守护（禁旧值 + 验新值）|
+| `test_doc_freshness.sh` | 16 | 文档版本号（K4 真相源 root VERSION，v2.1.1+）/ 测试用例数 / 命令面 / shim 安装说明一致性 / recall 语义 / 文档指纹 / 凭证前缀数量双向守护 / **structural drift guard：跨 6 个 canonical 文档（含 README.md）断言 '<N> 套件' 数量** + **`<N>/<N> ✅` 平台兼容声称守护**（v2.1.5+） |
+| `test_doc_freshness_k4_chicken_egg.sh` | 1 | K4 regression guard：临时 ln -sfn 到陈旧版本，断言 doc-freshness 仍全绿（v2.1.1 新增） |
 | `test_encode_cc_path.sh` | 11 | 路径编码 / 末尾斜杠 / --help |
-| `test_handoff_lint.sh` | 10 | Dev Log anchor / 倒序 / 必填字段 / 浮动条目 / recall-readiness |
-| `test_install.sh` | 75 | 四平台安装 / 卸载 / 项目级 / .skill 自举 / shim 单源注册 / WSL 模拟 / Codex $ aliases |
+| `test_handoff_lint.sh` | 43 | v2 per-file frontmatter / body 字段同义词 / 日期 / 数字 / Decision Log 豁免 / readiness / typo 拒绝 |
+| `test_handoff_postflight.sh` | 20 | 聚合 5-check + 三态 PASS/FAIL/missing / --quiet / GNU 位置自由 / unknown flag / --help（v2.1.0 新增） |
+| `test_handoff_recall_v2.sh` | 9 | v2 多文件 layout 下 recall 行为：永远读三件套 + 按 N 读 Dev Log + 不读归档 |
+| `test_handoff_v2_schema.sh` | 21 | v2 marker / pointer stat block 完整性 / per-file frontmatter schema |
+| `test_install.sh` | 87 | 四平台安装 / 卸载 / 项目级 / .skill 自举（含 v2.1.3 commands→command-shims 兼容）/ shim 单源注册 / WSL 模拟 / Codex $ aliases |
+| `test_migrate_to_v2.sh` | 77 | v1→v2 自动迁移 / 原子 rollback / .partial staging / 三态 marker / B7-a EUID=0 skip（Linux 容器 root 兼容，v2.1.2+） |
 | `test_no_legacy_templates.sh` | 5 | templates/ 清理验证 / 旧引用清理 |
+| `test_project_tree_forbidden.sh` | 3 | 项目根扫禁 `Handoff_OldBackup_*` / `Handoff_planning_*` / `docs/superpowers/`（preflight 闸门） |
 | `test_recommended_consistency.sh` | 10 | validate/tidy RECOMMENDED 列表一致 + template 章节覆盖 + bundle 同步 |
+| `test_release_artifact_content.sh` | 2 | Release tarball 内容扫描（禁 HANDOFF.md / memory/ / .tmp/ 等私有路径） |
 | `test_release_dry_run_audit.sh` | 12 | staging 安全 / forbidden files / command shims / release manifest / no artifact writes |
-| `test_rotation_reminder.sh` | 14 | 过期 / 7d / 30d / far future / 占位符 / 三态退出码 / 模板 schema |
-| `test_scan_credentials.sh` | 21 | 11 种凭证前缀（含 github_pat\_ / hf\_）+ 白名单 + stdin 模式 + label 断言 |
-| `test_scripts_sync.sh` | 16 | dev 与 bundle 脚本字节级一致 + 可执行权限 |
+| `test_rotation_reminder.sh` | 17 | 过期 / 7d / 30d / far future / 占位符 / 三态退出码 / 模板 schema |
+| `test_scan_credentials.sh` | 32 | 11 种凭证前缀（含 github_pat\_ / hf\_）+ 白名单 + stdin 模式 + label 断言 + v2 directory mode |
+| `test_scripts_sync.sh` | 18 | dev 与 bundle 脚本字节级一致 + 可执行权限（含 v2 新增脚本） |
 | `test_shellcheck.sh` | 3 | 脚本静态分析（dev + bundle；需本地安装 shellcheck） |
-| `test_skill_metadata_budget.sh` | 3 | skill metadata 字段预算校验 |
+| `test_skill_metadata_budget.sh` | 3 | skill metadata 字段预算校验（≤160 chars project budget / ≤1024 chars skill-creator validator cap） |
 | `test_sync_codex_skills.sh` | 7 | ~/.agents/skills → ~/.codex/skills 全量同步 + command alias |
 | `test_sync_memory.sh` | 43 | 状态机 / 幂等 / symlink / 凭证 / git 提示 / .sync-enabled 语义 |
-| `test_tidy_handoff.sh` | 21 | 空行压缩 / 锚点补齐 / 乱序诊断 / 缺字段诊断 / 幂等 / I9 内容保全 / post-Dev-Log section anchor / short-form anchor no-op |
-| `test_validate_handoff.sh` | 34 | 所有 REQUIRED + RECOMMENDED 章节 + readiness / 复合标题 + false positive 防御 |
+| `test_tidy_handoff.sh` | 53 | 空行压缩 / 锚点补齐 / 乱序诊断 / 缺字段诊断 / 幂等 / `--apply` CLI flag（v2.1.0+，原 ENV var 兼容）/ 同义词容忍 / post-Dev-Log section anchor |
+| `test_validate_handoff.sh` | 37 | 所有 REQUIRED + RECOMMENDED 章节 + readiness / 复合标题 + false positive 防御 + v2 dir mode pointer stat |
 
 ### 手动验收矩阵
 

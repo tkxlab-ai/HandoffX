@@ -2,6 +2,68 @@
 
 记录各版本的关键变化。最新版本在最上面。
 
+## v2.1.5 — 2026-05-11
+
+**Theme: 11 轮 superpowers code-review 循环 auditing — 5 Critical + 16 Important + 2 structural drift guards 沉淀。**
+
+### Why
+
+v2.1.4 hot-fix 后 Boss 要求"调 superpowers 的 code reviewer 对项目进行整体循环 auditing。需要连续三轮 auditing 的 review 没有出现任何 bug 才可以停止"。每轮派独立 subagent context（不见我作者侧思路），找 bug 修，重审，直到 3 连续 0-bug。最终 11 轮收口。
+
+### 11 轮 audit 摘要
+
+| Round | Subagent | 发现 | Counter |
+|-------|----------|------|---------|
+| 1 | `af7ada24` | 3 Critical + 5 Important (`INSTALL/HANDOFF/README/CONTRIBUTING` `commands/` 旧路径 drift；v2.1.4 `Edit replace_all` 实际未替换；K4 test 在 fresh-clone 漏；Decision 0017 落地未回填 Outcome；CHANGELOG 三 copy 漂移；install.sh both-exist 边角；HANDOFF.md ASCII tree) | 0 |
+| 2 | `a4a8b2dc` | 1 Critical + 3 Important (`test_doc_freshness.sh:97` **silent-pass on dead path**；TEST-SCENARIOS 7 个 suite 漏 + count drift；Mac Project Transfer 单数 OpenCode) | 0 |
+| 3 | `aa618201` | 1 Important + **+Test 15 structural drift guard** (跨 5 doc `<N> 套件` 一致性) | 0 |
+| 4 | `af34841e` | 2 Important (`doc-freshness 14/0` per-suite enum + `v2.1.5` 错引版本号 — sed copy-paste 错位) | 0 |
+| 5 | `a21d5664` | 1 Important (Round 1 sed `commands/→command-shims/` over-applied，HANDOFF.md:77 自指 tautological `command-shims/→command-shims/`) | 0 |
+| 6 | `a48cba4e` | **0-bug** ✅ | **1** |
+| 7 | `a098ad91` | 1 Critical + 3 Important (Round 3 Test 15 scope 漏 README.md；3 处 `<N>/<N> ✅` stale；`+Test 16` X/Y 平台 guard) | 0 |
+| 8 | `ad37f24a` | 1 Important (per-suite enum 15→16 recurrence — 同 Round 4 一类) | 0 |
+| 9 | `af5c37b7` | **0-bug** ✅ | 1 |
+| 10 | `aae2fde0` | **0-bug** ✅ | 2 |
+| 11 | `a37a1651` | **0-bug** ✅ | **3 → STOP** |
+
+### Key changes（全部 docs + 2 structural test，0 production code）
+
+- **Round 1-2-3-4-5-7-8 docs drift fixes**：累计 ~30 处 stale path / count / version / arrow / per-suite enum 全部 forward-fix 到 current state
+- **+Test 15** (`tests/test_doc_freshness.sh` Round 3)：跨 6 canonical doc 扫 `<N> 套件` claim，与 `ls tests/test_*.sh | wc -l` 一致；`^[1-9][0-9]*` 正则排除 `0 套件` delta 描述。Round 7 把 README.md 加进 scope（Round 1 漏盲点）
+- **+Test 16** (`tests/test_doc_freshness.sh` Round 7)：扫 `<N>/<N> ✅` 平台兼容声称，X==Y 时必须等于实际 suite count；HANDOFF + Mac Project Transfer 覆盖
+- **`Handoff_Decisions/0017-...md` Outcome 段** (Round 1 I2)：plan-vs-actual drift 完整回填表 + 3 条 Outcome 教训 + 落地段加 ⚠️ 反向 cross-ref
+- **`install.sh:156-161` bootstrap-rename both-exist cleanup** (Round 1 I4)：v2.1.3 `commands/→command-shims/` rename 的 backward-compat shim 加 silent-corruption 边角处理
+- **`tests/test_doc_freshness_k4_chicken_egg.sh:17,24,28` fresh-clone CREATED_LINK flag** (Round 1 I1)：trap restore 处理 `Release/latest` 不存在的边角，防 stale-v0.0.1 poison
+
+### 关键沉淀（reviewer 跨轮观察）
+
+1. **"每个 fix layer 揭露下一层 drift"** (Round 4-5 reviewer 提出，每轮验证)：Round 1 content drift → Round 2 dead-path drift → Round 3 aggregate count drift → Round 4 per-suite enum drift → Round 5 sed-collateral drift → Round 7 test-scope 漏 README → Round 8 per-suite enum recurrence。**Structural test > 反复修同一类**
+2. **同 context authoring/review 看不见盲点**：v2.1.4 hot-fix 我自报"INSTALL.md / README.md / CONTRIBUTING.md grep `skills/handoff/commands/` → 0 命中"，实际 INSTALL.md 还有 6 处（Edit replace_all 报 success 但 0 替换）。Round 1 reviewer 5 分钟用 grep 就抓到——这是 CLAUDE.md §4 authoring/review 必须分离的第二次实证
+3. **Recursive drift 需要 structural fix**：Test 15+16 是模式 fix，比"再批量修一遍" 长期 ROI 高出一个数量级。**v2.2.0 backlog** 新增 3 项：
+   - per-suite enum auto-guard（Round 4+8 同一 bug 类重复出现，证明需要 mechanical 守护）
+   - rename-arrow guard（Round 5 sed-collateral 类）
+   - Release/CHANGELOG.md ↔ root CHANGELOG.md sync gate（Round 1 + Round 10 都触及）
+
+### Backward compatibility
+
+100% 兼容：纯 docs + structural tests，0 行 production code 改动，0 套件断言移除（+2 added: Test 15 + 16）。macOS bash 3.2 26/26 ✅ + Ubuntu 22.04 mawk 26/26 ✅ 双绿基线保持。
+
+### Audit trail
+
+由 **`superpowers:requesting-code-review`** skill 11 次独立 subagent context（每轮 fresh `general-purpose` Task tool，独立 ~150-300K tokens）触发；review 完整 findings 表（subagent IDs / Strengths / Critical / Important / Minor / Recommendations）记录于 Dev Log 0045。
+
+### Not in v2.1.5（保持推延 v2.2.0）
+
+- per-suite enum auto-guard（Round 4 + Round 8 同一类 bug 重复发生证据）
+- rename-arrow guard（Round 5 sed collateral 类）
+- Release/CHANGELOG.md ↔ root sync gate
+- Decision Outcome 模板必填字段（Round 1 Recommendation）
+- release.sh upstream-recalibration check
+- .skill artifact content sanity test
+- race-free migration / pointer regen via flock（Decision 0013 继续推延）
+
+---
+
 ## v2.1.4 — 2026-05-11
 
 **Theme: v2.1.3 docs drift hot-fix — superpowers code-reviewer subagent 独立 review 触发的 1 Critical + 4 Important plan-vs-actual 一致性修复。**
@@ -29,7 +91,7 @@ review 一次发现 5 处 docs drift 都源于：**3 个 patch 同 context 自�
 
 ### Backward compatibility
 
-100% 兼容：纯 docs 修订，0 行 code 改动，0 套件断言变化，0 行 install.sh 改动。macOS 24/24 ✅ 保持。
+100% 兼容：纯 docs 修订，0 行 code 改动，0 套件断言变化，0 行 install.sh 改动。macOS 26/26 ✅ 保持。
 
 ### Audit trail
 
@@ -84,7 +146,7 @@ review 一次发现 5 处 docs drift 都源于：**3 个 patch 同 context 自�
 100% 兼容：
 - 旧 .skill 包（v2.1.2-）bootstrap 自动 commands → command-shims rename，安装行为不变
 - 旧版 OpenCode 安装残留双路径清理（install.sh + uninstall）
-- macOS bash 3.2 24/24 ✅ + Ubuntu 22.04 mawk 24/24 ✅ 双绿基线保持
+- macOS bash 3.2 26/26 ✅ + Ubuntu 22.04 mawk 26/26 ✅ 双绿基线保持
 
 ### Not in v2.1.3（保持推延 v2.2.0）
 
@@ -94,7 +156,7 @@ review 一次发现 5 处 docs drift 都源于：**3 个 patch 同 context 自�
 
 ## v2.1.2 — 2026-05-11
 
-**Theme: Linux compatibility — mawk regex POSIX 化 + chmod-on-root skip；Ubuntu 22.04 容器实测 24/24 ✅。**
+**Theme: Linux compatibility — mawk regex POSIX 化 + chmod-on-root skip；Ubuntu 22.04 容器实测 26/26 ✅。**
 
 ### Why
 
@@ -127,7 +189,7 @@ macOS 默认全装/兼容，无需操作。
 
 ### Backward compatibility
 
-100% 兼容：所有 awk regex 改写为 POSIX `[0-9][0-9][0-9][0-9]` 形式，在 BSD awk / gawk / mawk 三家都一致匹配。macOS 行为字节不变（已跑 run_all 24/24 ✅）。
+100% 兼容：所有 awk regex 改写为 POSIX `[0-9][0-9][0-9][0-9]` 形式，在 BSD awk / gawk / mawk 三家都一致匹配。macOS 行为字节不变（已跑 run_all 26/26 ✅）。
 
 ### Not in v2.1.2（保持推延 v2.2.0）
 

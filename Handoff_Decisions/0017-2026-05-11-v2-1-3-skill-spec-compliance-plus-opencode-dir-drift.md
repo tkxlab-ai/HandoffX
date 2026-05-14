@@ -65,9 +65,9 @@ D 的代价：
 
 **结论**
 
-选 D。落地（按时间顺序）：
+选 D。落地（按时间顺序）。**⚠️ 本节是 plan，不是实际交付——请同步阅读末尾 `Outcome（v2.1.4 hot-fix 时回填）` 表格**：Phase 2 的 B2（agents/→assets/）和 C（`when_to_use`）在 release-gate 时被拒，最终交付与计划存在 drift。
 1. **Phase 1**: 机械 probe OpenCode v1.14.41 commands/（复数）可读 ✅
-2. **Phase 2**: install.sh OpenCode target 切复数 + commands/ → command-shims/ git mv + agents/codex-commands.txt → assets/ + SKILL.md frontmatter 扩展（when_to_use）
+2. **Phase 2 (planned)**: install.sh OpenCode target 切复数 + commands/ → command-shims/ git mv + ⚠️ agents/codex-commands.txt → assets/（见 Outcome）+ SKILL.md frontmatter 扩展（⚠️ when_to_use，见 Outcome）
 3. **Phase 3**: 双平台 install.sh + run_all 24/24 ✅ ✅
 4. **Phase 4**: Gotcha #9 标 obsolete + Gotcha #16（两 case study）+ Decision 0017（本文件）+ HANDOFF.md pointer counters
 5. **Phase 5**: gitx-release v2.1.3 + audit 209/0/0 + commit + tag + push private Git host + Dev Log 0043

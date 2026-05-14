@@ -25,11 +25,11 @@ scripts/                     → 开发版 bash 脚本（与 skill 内副本字�
 skills/handoff/              → Skill 本体（install.sh 的唯一安装源）
   ├── SKILL.md               →   入口
   ├── references/            →   命令详细规范
-  ├── commands/              →   slash shim 源（install.sh 拷到 ~/.claude/commands/）
+  ├── command-shims/         →   slash shim 源（install.sh 拷到 ~/.claude/commands/；v2.1.3 起改名，原 `commands/`）
   ├── scripts/               →   随 skill 分发的脚本（与根 scripts/ 字节级同步）
   ├── assets/                →   新项目的 HANDOFF.md 起点模板
   └── evals/                 →   评估场景定义
-tests/                       → TDD 测试套件 + fixtures（17 套件 / 296 断言）
+tests/                       → TDD 测试套件 + fixtures（26 套件 / 591 断言）
 install.sh                   → 一键安装到 ~/.claude/skills/handoff/
 release.sh                   → 发版打包 + 安全扫描
 ```

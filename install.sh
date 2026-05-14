@@ -151,8 +151,14 @@ fi
 # 目录叫 commands/；v2.1.3 起改名 command-shims/（让"这是 install.sh 的 shim 源
 # 镜像，不是 Claude Code 直读路径"明示，Gotcha #5 同根）。从旧包 bootstrap 时
 # 自动迁名，让下游 install_to_dir / install_codex_aliases 统一只看 command-shims/。
-if [ ! -d "$SKILL_SRC/command-shims" ] && [ -d "$SKILL_SRC/commands" ]; then
-    mv "$SKILL_SRC/commands" "$SKILL_SRC/command-shims"
+# v2.1.5（Round 1 review I4）: 处理 both-exist 边角——若两个目录都在，
+# command-shims/ 是 canonical，删掉 legacy commands/ 防 silent revival。
+if [ -d "$SKILL_SRC/commands" ]; then
+    if [ ! -d "$SKILL_SRC/command-shims" ]; then
+        mv "$SKILL_SRC/commands" "$SKILL_SRC/command-shims"  # 老包 bootstrap: rename
+    else
+        rm -rf "$SKILL_SRC/commands"  # both exist: legacy cleanup（canonical 是 command-shims/）
+    fi
 fi
 
 # ── 参数解析 ─────────────────────────────────────────────────────────────────

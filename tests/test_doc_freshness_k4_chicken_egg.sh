@@ -14,12 +14,20 @@ source "$(cd "$(dirname "$0")" && pwd)/common.sh"
 
 LATEST_LINK="$ROOT_DIR/Release/latest"
 ORIGINAL_TARGET=""
+CREATED_LINK=0
 if [ -L "$LATEST_LINK" ]; then
     ORIGINAL_TARGET=$(readlink "$LATEST_LINK")
+else
+    # v2.1.5: fresh-clone / CI case — Release/latest may not exist before this test runs.
+    # If we create the symlink, must rm on cleanup to avoid leaving stale v0.0.1 poison
+    # for subsequent tests / user's working tree. Reported by Round 1 review I1.
+    CREATED_LINK=1
 fi
 
 restore_latest() {
-    if [ -n "$ORIGINAL_TARGET" ]; then
+    if [ "$CREATED_LINK" -eq 1 ]; then
+        rm -f "$LATEST_LINK"
+    elif [ -n "$ORIGINAL_TARGET" ]; then
         ln -sfn "$ORIGINAL_TARGET" "$LATEST_LINK"
     fi
 }
