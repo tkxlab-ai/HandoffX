@@ -1,0 +1,11 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Security vulnerability
+    url: https://github.com/tkxlab-ai/HandoffX/security/advisories/new
+    about: Please use private security advisories for security issues — never a public issue.
+  - name: Installation help
+    url: https://github.com/tkxlab-ai/HandoffX/blob/main/INSTALL.md
+    about: Read INSTALL.md before opening an issue about install problems.
+  - name: README (中文)
+    url: https://github.com/tkxlab-ai/HandoffX/blob/main/README.md
+    about: 完整中文文档与使用说明。

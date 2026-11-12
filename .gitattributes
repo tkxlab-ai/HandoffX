@@ -1,0 +1,45 @@
+# Release source tarball = `git archive` of HEAD (scripts/scrub-tarball.sh, the
+# gitx-release hook). export-ignore keeps project-state and local-only files out.
+# Every entry is ROOT-ANCHORED on purpose: an unanchored name would also strip
+# same-named input data deeper in the tree (tests/, evals/). The synthetic v2
+# fixture is stored under neutral names (tests/fixtures/p2-1-synthetic-v2/
+# legacy-main.md, legacy-gotchas.md, legacy-logs/, legacy-decisions/) because
+# gitx-release's deep audit rejects the legacy names at ANY depth of the source
+# tarball; tests/common.sh p21_materialize lays them out under the legacy names.
+# The release contract test derives its expected file set from these lines and
+# accepts only root-anchored literals plus one glob form: a single trailing "*"
+# on a file pattern (the .bak* lines — tidy backups carry a timestamp suffix,
+# so two concrete names would miss the ones tidy really writes).
+
+# Current (v4) four-piece layout
+/HANDOFFX.md export-ignore
+/Handoffx_Logs/ export-ignore
+/Handoffx_Decisions/ export-ignore
+/GOTCHAS.md export-ignore
+
+# Legacy layout: a cut made before the live repo migrates must not ship it either
+/HANDOFF.md export-ignore
+/Handoff_Logs/ export-ignore
+/Handoff_Decisions/ export-ignore
+
+# Archive / backup / handoff-notes variants: the root release path and the
+# artifact gate forbid them, so a committed one must not ship either
+/HANDOFFX.archive.md export-ignore
+/HANDOFF.archive.md export-ignore
+/Handoffx_Logs.archive/ export-ignore
+/Handoff_Logs.archive/ export-ignore
+/HANDOFFX.md.bak* export-ignore
+/HANDOFF.md.bak* export-ignore
+/HANDOFFX.md.pre-v2-backup export-ignore
+/HANDOFF.md.pre-v2-backup export-ignore
+/HANDOFF.archive.md.pre-v2-backup export-ignore
+/NEXT_SESSION_NOTES.md export-ignore
+
+# Local agent context and generated graphs
+/CLAUDE.md export-ignore
+/memory/ export-ignore
+/graphify-out/ export-ignore
+
+# dev-process records: field reports and SDD briefs/reports/ledger stay in git only
+/docs/field-reports/ export-ignore
+/docs/sdd/ export-ignore
