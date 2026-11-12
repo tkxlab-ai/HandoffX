@@ -1,0 +1,60 @@
+# macOS
+.DS_Store
+
+# Test scratch
+tests/.tmp/
+
+# Claude Code 本机权限缓存（per-machine，不应进库）
+.claude/settings.local.json
+
+# Claude Code worktrees infrastructure（隔离开发副本，本地运行时产物）
+.claude/worktrees/
+
+# 编辑器
+.vscode/
+.idea/
+.cursor/
+*.swp
+*.swo
+
+# Python 工具链 per-machine（pyenv local pin）
+.python-version
+
+# 日志
+*.log
+
+# Release artifacts（per Dev Log 2026-05-01）
+Release/
+
+# 实验性 memory sync（per Dev Log 2026-05-01）
+memory/
+
+# tidy/archive 临时备份
+HANDOFF.md.bak*
+HANDOFFX.md.bak*
+
+# 老备份目录（不入库）
+Handoff_OldBackup_0504/
+
+# Syncthing 同步残留（双副本冲突 + atomic-rename tmp，都是噪声）
+*.sync-conflict-*
+.syncthing.*.tmp
+
+# GitHub publish worktree（per Decision 0018，publish-github.sh 维护，每版本 wipe-rewrite）
+.github-publish-wt/
+
+# GitHub PAT for tkxlab-ai/HandoffX publish（本机专属，绝不入库）
+TKXLAB_GH_Key.conf
+
+# graphify 本地工具产物：知识图谱可重建、.claude/ 是本机 PreToolUse hook。
+# 纯本机/可重建，绝不入库。
+# 注：CLAUDE.md 不在此 —— 它是项目 agent 规则文件（graphify 段 + 项目测试
+# 约定等），需进私有 git 服务共享/版本化；公开镜像由 release-sanitize-public.sh
+# DEV_ONLY 剥离（私有仓不公开，泄漏面只在公开 mirror）。
+graphify-out/
+.claude/
+
+# Review-loop ephemeral scratch（ADR-0003：per-round ledger 是 gitignored
+# 草稿，收敛即弃；唯一耐久痕迹是 Handoffx_Logs/ 一行结论。复用 graphify-out/
+# 不发布先例——绝不入库、绝不进 .skill bundle、recall 不读。
+.review-loop/
