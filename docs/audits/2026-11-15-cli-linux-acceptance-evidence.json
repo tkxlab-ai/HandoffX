@@ -1,0 +1,417 @@
+{
+  "date": "2026-11-15",
+  "timezone": "America/Los_Angeles",
+  "scope": "selected actual CLI behavior cases and Linux regression; not the full nine eval scenarios or patch review",
+  "overall": "NOT_ACCEPTED",
+  "version_changed": false,
+  "implementation_modified": false,
+  "committed": false,
+  "released": false,
+  "counting_rule": "All visible assistant text, including progress, punctuation, whitespace and paths, counted as Unicode code points; excludes reasoning/tool output; no duplicate result replay. Not interactive UI rendering verification.",
+  "installed_parity": {
+    "claude": {
+      "compared": 34,
+      "mismatches": []
+    },
+    "opencode": {
+      "compared": 34,
+      "mismatches": []
+    },
+    "codex": {
+      "compared": 34,
+      "mismatches": []
+    }
+  },
+  "codex": {
+    "cli_version": "0.165.0",
+    "model": "gpt-6-astra",
+    "cases": {
+      "write": {
+        "exit_code": 0,
+        "timeout": false,
+        "seconds": 94.97,
+        "project_unchanged": false,
+        "assistant_chars": 143,
+        "visible_message_count": 2,
+        "within_200": true,
+        "single_response": false,
+        "independent_validation": {
+          "lint": {
+            "exit_code": 0,
+            "output": ""
+          },
+          "structure_and_counts": {
+            "exit_code": 0,
+            "output": "✅ HANDOFFX.md structure OK\n"
+          },
+          "one_log": true,
+          "one_decision": true,
+          "canonical_decision_ref": true,
+          "three_changed_paths": true,
+          "user_report_attributed": true,
+          "choice_and_tradeoff": true,
+          "v2_marker": true,
+          "gotchas_exists": true,
+          "mechanical_steps_in_transcript": {
+            "hx.sh now --epoch": true,
+            "hx.sh dup-check": true,
+            "hx.sh next-number logs": true,
+            "hx.sh next-number decisions": true,
+            "hx.sh regen": true,
+            "handoff-postflight.sh --brief --files=": true
+          }
+        }
+      },
+      "recall": {
+        "exit_code": 0,
+        "timeout": false,
+        "seconds": 44.37,
+        "project_unchanged": true,
+        "assistant_chars": 203,
+        "visible_message_count": 2,
+        "within_200": false,
+        "single_response": false
+      },
+      "recall-default": {
+        "exit_code": 0,
+        "timeout": false,
+        "seconds": 44.73,
+        "project_unchanged": true,
+        "assistant_chars": 190,
+        "visible_message_count": 2,
+        "within_200": true,
+        "single_response": false
+      }
+    }
+  },
+  "claude": {
+    "cli_version": "2.1.312",
+    "model_metadata": "claude-opus-5-5",
+    "cases": {
+      "write-retry": {
+        "exit": {
+          "exit_code": 0,
+          "timed_out": false,
+          "elapsed_seconds": 115.252
+        },
+        "cli_success": true,
+        "model_ids": [
+          "claude-opus-5-5"
+        ],
+        "assistant_text_unicode_codepoints_total": 409,
+        "assistant_text_block_count": 6,
+        "visible_nonempty_assistant_messages": 6,
+        "at_most_200_unicode_codepoints": false,
+        "single_response_no_progress": false
+      },
+      "recall-retry": {
+        "exit": {
+          "exit_code": 0,
+          "timed_out": false,
+          "elapsed_seconds": 103.585
+        },
+        "cli_success": true,
+        "model_ids": [
+          "claude-opus-5-5"
+        ],
+        "assistant_text_unicode_codepoints_total": 426,
+        "assistant_text_block_count": 4,
+        "visible_nonempty_assistant_messages": 4,
+        "at_most_200_unicode_codepoints": false,
+        "single_response_no_progress": false
+      }
+    },
+    "limitations": [
+      "Each initial launch failed before model invocation due to CLI argument boundary; one corrected retry per case.",
+      "Recall searched filesystem root and read byte-identical references from another real installed skill root; pure isolated installation not established.",
+      "Final postflight numeric exit was not captured; independent lint and structure/count checks passed.",
+      "Final pending items make unsupported test-coverage claim."
+    ]
+  },
+  "opencode": {
+    "cli_version": "2.3.0",
+    "model": "tkx/glm-5.3",
+    "cases": {
+      "write": {
+        "execution": {
+          "model": "tkx/glm-5.3",
+          "elapsed_seconds": 210.093,
+          "command_exit_code": 0,
+          "wait_exit_code": 143,
+          "timed_out": true
+        },
+        "visible_text": {
+          "total_unicode_codepoints": 184,
+          "within_200": true,
+          "single_visible_block": false,
+          "stream_matches_projected_text": true
+        },
+        "visible_parts": 3,
+        "project_unchanged": false,
+        "verdict": "BLOCKED_TIMEOUT_AND_UX_PROGRESS_FAILURE",
+        "assertions": {
+          "four_piece_skeleton_exists": true,
+          "exactly_one_devlog": false,
+          "exactly_one_decision": false,
+          "devlog_decision_canonical_reference": "NOT_VERIFIABLE_MISSING_ENTRIES",
+          "timestamp_from_hx_now": true,
+          "next_number_logs": true,
+          "next_number_decisions": true,
+          "regen_executed": false,
+          "postflight_executed": false,
+          "postflight_actual_write_targets": "NOT_RUN",
+          "no_progress_messages": false,
+          "all_visible_text_le_200": true
+        }
+      },
+      "recall": {
+        "execution": {
+          "model": "tkx/glm-5.3",
+          "elapsed_seconds": 29.133,
+          "command_exit_code": 0,
+          "wait_exit_code": 0,
+          "timed_out": false
+        },
+        "visible_text": {
+          "total_unicode_codepoints": 189,
+          "within_200": true,
+          "single_visible_block": true,
+          "stream_matches_projected_text": true
+        },
+        "visible_parts": 1,
+        "project_unchanged": true,
+        "verdict": "FAIL_ARGUMENT_INTERPRETATION_SIX_INSTEAD_OF_THREE",
+        "assertions": {
+          "exactly_latest_three_logs": false,
+          "state_and_gotchas_read": true,
+          "full_manifest_unchanged": true,
+          "all_visible_text_le_200": true,
+          "single_visible_block": true,
+          "claims_three_records": false,
+          "no_write_or_shell_tools": true
+        }
+      },
+      "recall-exact": {
+        "execution": {
+          "model": "tkx/glm-5.3",
+          "elapsed_seconds": 20.529,
+          "command_exit_code": 0,
+          "wait_exit_code": 0,
+          "timed_out": false
+        },
+        "visible_text": {
+          "total_unicode_codepoints": 207,
+          "within_200": false,
+          "single_visible_block": true,
+          "stream_matches_projected_text": true
+        },
+        "visible_parts": 1,
+        "project_unchanged": true,
+        "verdict": "FAIL_UX_207_CHARACTERS",
+        "assertions": {
+          "exactly_latest_three_logs": true,
+          "state_and_gotchas_read": true,
+          "full_manifest_unchanged": true,
+          "all_visible_text_le_200": false,
+          "single_visible_block": true,
+          "claims_three_records": true,
+          "no_write_or_shell_tools": true
+        }
+      }
+    },
+    "credential_cleanup": {
+      "runtime_directories_deleted": [
+        "home",
+        "config",
+        "data",
+        "cache",
+        "state",
+        "tmp"
+      ],
+      "private_config_and_env_deleted": true,
+      "redacted_evidence_files": [
+        "runtime.log"
+      ],
+      "remaining_known_secret_matches": [],
+      "prior_tool_output_incident": true,
+      "incident_note": "A diagnostic tool response accidentally exposed provider authentication settings; retained evidence has been scrubbed, but prior conversation tool output cannot be revoked. Credential rotation is recommended; no real credential/config was modified.",
+      "incident_details": {
+        "unredacted_real_credential_entered_tool_response": true,
+        "provider": "tkx",
+        "source_field": "provider.tkx.options.apiKey",
+        "response_field": "settings.apiKey",
+        "additional_temporary_credential_fields": [
+          "local server password",
+          "Authorization Basic (temporary local server)"
+        ],
+        "disclosure_channel": "Local diagnostic HTTP response from isolated OpenCode server printed into this conversation tool output.",
+        "separate_external_upload_of_diagnostic_content": "No separate upload action was performed. Authorized model requests used tkx authentication normally. No claim is made about conversation platform retention or vendor-side logs.",
+        "real_config_modified": false,
+        "credential_rotated": false,
+        "conversation_output_retractable_by_agent": false
+      }
+    },
+    "process_cleanup": {
+      "remaining_temp_server_pty_event_processes": []
+    },
+    "credential_incident": {
+      "real_credential_in_tool_response": true,
+      "provider": "tkx",
+      "source_field": "provider.tkx.options.apiKey",
+      "response_field": "settings.apiKey",
+      "temporary_local_server_auth_also_echoed": true,
+      "user_persistent_credential_rotated": false,
+      "recommended_action": "Rotate affected tkx API key; prior conversation tool output cannot be revoked.",
+      "separate_public_upload_performed": false,
+      "cannot_exclude_platform_or_provider_log_retention": true
+    },
+    "limitations": [
+      "Uses actual session.command on isolated local server, not an interactive rendered UI.",
+      "A temporary opencode-pty cache process was observed despite plugin=[]; its origin was not established. Temporary server/pty/cache were cleaned.",
+      "Exact numeric recall argument succeeded; attached prose variant read six instead of three.",
+      "Write timeout stopped a partial skeleton, not a completed handoff."
+    ]
+  },
+  "linux": {
+    "exit_code": 0,
+    "suites": 40,
+    "passed": 3627,
+    "failed": 0,
+    "actual_skipped": 0,
+    "wrapper_symbol_matches": 12,
+    "wrapper_skip_count_is_incorrect": true,
+    "distribution": "Ubuntu 22.04",
+    "architecture": "aarch64",
+    "bash": "5.1.16",
+    "awk": "mawk 1.3.4 20200120",
+    "uid": 501,
+    "python_available": false,
+    "orb_started": true,
+    "orb_left_running": true,
+    "repository_snapshot_entries": 2607,
+    "repository_snapshot_changes": 0
+  },
+  "macos_quiet_contract": {
+    "passed": 27,
+    "failed": 0,
+    "exit_code": 0
+  },
+  "artifacts": [
+    {
+      "source": "codex",
+      "relative_path": "codex-write/events.jsonl",
+      "sha256": "ca0ff0aa4aa4508b7183f125d8038af0ca9e6d221f4b37d981709dfa7a5fe7fa"
+    },
+    {
+      "source": "codex",
+      "relative_path": "codex-write/artifact-validation.json",
+      "sha256": "0d2f8b93a903dba89241562b9e03311d6f3971634d055e5fb060535b29349300"
+    },
+    {
+      "source": "codex",
+      "relative_path": "codex-recall/events.jsonl",
+      "sha256": "490e3973ce92dca59feabf2efaea88f2c4a321dc306cbd2cba16e9e01d473784"
+    },
+    {
+      "source": "codex",
+      "relative_path": "codex-recall/before.json",
+      "sha256": "e0d963efbb8865941483a2c8f31831c197086f8e257d8bdb6814e939e4d94eb6"
+    },
+    {
+      "source": "codex",
+      "relative_path": "codex-recall/after.json",
+      "sha256": "e0d963efbb8865941483a2c8f31831c197086f8e257d8bdb6814e939e4d94eb6"
+    },
+    {
+      "source": "codex",
+      "relative_path": "codex-recall-default/events.jsonl",
+      "sha256": "97aec44c61af401ad7dafe9a8cbff6c84a609904c2d3030425a6790b980cfd33"
+    },
+    {
+      "source": "codex",
+      "relative_path": "codex-recall-default/before.json",
+      "sha256": "e0d963efbb8865941483a2c8f31831c197086f8e257d8bdb6814e939e4d94eb6"
+    },
+    {
+      "source": "codex",
+      "relative_path": "codex-recall-default/after.json",
+      "sha256": "e0d963efbb8865941483a2c8f31831c197086f8e257d8bdb6814e939e4d94eb6"
+    },
+    {
+      "source": "codex",
+      "relative_path": "quiet-output-contract.log",
+      "sha256": "60328631c42c3f6bbd1d7e0be1466ad7082b16a176ebf3680f1b200023dee441"
+    },
+    {
+      "source": "codex",
+      "relative_path": "linux/linux-container.stdout.log",
+      "sha256": "aea303bdeb58bc6fdbe9e92ada8f51bf78022db357a507c1162582e3c5db1c1e"
+    },
+    {
+      "source": "codex",
+      "relative_path": "linux/test-user-environment.stdout.log",
+      "sha256": "b5af376abe8d13588912ebb214113b35db10345232f27c5d77be5f3c2d3c9ef6"
+    },
+    {
+      "source": "codex",
+      "relative_path": "linux/repo-comparison.json",
+      "sha256": "4cc8dd81f4826f0f51a24f9a5a05151e2c105d8c4850ca9b2812e0ba6ff5731c"
+    },
+    {
+      "source": "claude",
+      "relative_path": "summary.json",
+      "sha256": "44c05b8d2d4d07d92508a59375f36c4f4b9149541679eb2b3316e086b8b8e16b"
+    },
+    {
+      "source": "claude",
+      "relative_path": "assertions.json",
+      "sha256": "e8aa4e8cfc628dd53c3c50313a0ccead2f3d76e1537ed2449e87dabc4301e70c"
+    },
+    {
+      "source": "claude",
+      "relative_path": "write-retry/stdout.stream.jsonl",
+      "sha256": "ccfba83eeaabc30d8206ae41fab2cf83fe4e65573b503b017e742e93f812fb9d"
+    },
+    {
+      "source": "claude",
+      "relative_path": "recall-retry/stdout.stream.jsonl",
+      "sha256": "2c004abfb6c1ff11b4e0cd399678aaff99998a15d57a79ebff984822341ea858"
+    },
+    {
+      "source": "claude",
+      "relative_path": "recall-retry/snapshot.before.json",
+      "sha256": "d76ca0852eeefe6c6cf0646d18bb63af21294b74b6ec635b29cbaec84f1acfd6"
+    },
+    {
+      "source": "claude",
+      "relative_path": "recall-retry/snapshot.after.json",
+      "sha256": "d76ca0852eeefe6c6cf0646d18bb63af21294b74b6ec635b29cbaec84f1acfd6"
+    },
+    {
+      "source": "claude",
+      "relative_path": "recall-retry/snapshot.diff.json",
+      "sha256": "ca3d163bab055381827226140568f3bef7eaac187cebd76878e0b63e9e442356"
+    },
+    {
+      "source": "opencode",
+      "relative_path": "assertions.json",
+      "sha256": "796bb61fdb98bb2a73e822c7690c0aca561334ebb7b52d8bb45e1284a59d556e"
+    },
+    {
+      "source": "opencode",
+      "relative_path": "credential-cleanup.json",
+      "sha256": "580be57ddf2ca7d55d9c455112b09fe1e4adb666f84e04da2141bebd9ce827c1"
+    },
+    {
+      "source": "opencode",
+      "relative_path": "post-cleanup-process-check.json",
+      "sha256": "153fa67f4c2659ca1d264b5ad735bf1b280bdac443a871d27cc39327566e785b"
+    },
+    {
+      "source": "opencode",
+      "relative_path": "REPORT.md",
+      "sha256": "8810fbe973cf388dfffe4939bc2979bdcb94dc2a087f7041fb804946960a67b1"
+    }
+  ],
+  "evidence_locator": "/tmp/handoffx-acceptance-location (local ephemeral artifacts, not committed)"
+}

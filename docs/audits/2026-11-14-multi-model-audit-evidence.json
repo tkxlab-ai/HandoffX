@@ -1,0 +1,454 @@
+{
+  "date": "2026-11-14",
+  "version": "4.2.1",
+  "source_commit": "e4b5794c91f90f1a5459140c7bdf3d6b2aeb96c9",
+  "models": [
+    {
+      "model": "tkx/glm-5.3",
+      "seconds": 388.5,
+      "rc": 0,
+      "distinct_files_read": 33,
+      "session_fresh": true
+    },
+    {
+      "model": "tkx/deepseek-v4-pro",
+      "seconds": 311.9,
+      "rc": 0,
+      "distinct_files_read": 44,
+      "session_fresh": true
+    },
+    {
+      "model": "tkx/deepseek-flash",
+      "seconds": 280.8,
+      "rc": 0,
+      "distinct_files_read": 37,
+      "session_fresh": true
+    }
+  ],
+  "method": "32 main numbered model findings plus prior audit, independently adjudicated; no vote-based truth",
+  "source_integrity": "148 selected source files unchanged during review",
+  "probe_groups": [
+    {
+      "id": "N01",
+      "case": "tidy_duplicate_metadata",
+      "tidy": {
+        "rc": 0,
+        "output": "   🔧 Renumbered duplicate: 0001-2026-11-14T1000-b.md → 0002-2026-11-14T1000-b.md\n\n═══ tidy summary ═══\n✅ 结构干净\n"
+      },
+      "files": {
+        "0001-2026-11-14T1000-a.md": "0001",
+        "0002-2026-11-14T1000-b.md": "0001"
+      },
+      "lint": {
+        "rc": 1,
+        "output": "❌ 0002-2026-11-14T1000-b.md: frontmatter number (0001) ≠ filename prefix (0002)\n"
+      }
+    },
+    {
+      "id": "N02",
+      "case": "scan_explicit_v1_target",
+      "direct": {
+        "rc": 1,
+        "output": "⚠️  GitHub personal token detected in <sandbox>/scan-v1/HANDOFF.md (line 4)\n"
+      },
+      "directory": {
+        "rc": 0,
+        "output": ""
+      },
+      "postflight": {
+        "rc": 0,
+        "output": "\n→ 1. scan-credentials\n   ✅\n→ 2. validate-handoff\n   ✅\n→ 3. handoff-lint\n   ✅\n→ 4. rotation-reminder\n   ✅\n→ 6. archive-devlog\n   ✅\n✅ postflight: all checks passed\n"
+      }
+    },
+    {
+      "id": "N03",
+      "case": "archived_reference",
+      "before": {
+        "rc": 0,
+        "output": "✅ xref-lint: write-target set clean\n"
+      },
+      "archive": {
+        "rc": 0,
+        "output": "📦 archived 1 entries older than 2025 to Handoffx_Logs.archive/\n"
+      },
+      "after": {
+        "rc": 1,
+        "output": "<sandbox>/archived-xref/note.md: Dev Log 0007 -> no target\n❌ xref-lint: unresolved cross-refs or residual placeholders above\n"
+      }
+    },
+    {
+      "id": "N04",
+      "case": "regen_permission",
+      "before": "0664",
+      "after": "0o600",
+      "regen": {
+        "rc": 0,
+        "output": ""
+      }
+    },
+    {
+      "id": "N05",
+      "case": "tidy_missing_v2_body",
+      "tidy": {
+        "rc": 0,
+        "output": "\n═══ tidy summary ═══\n✅ 结构干净\n"
+      },
+      "lint": {
+        "rc": 1,
+        "output": "❌ 0001-2026-11-14T1000-test.md: missing body field: **验证** (or **Verification**)\n"
+      }
+    },
+    {
+      "id": "N06",
+      "case": "rotation_warning",
+      "rotation": {
+        "rc": 1,
+        "output": "🟠 3 天内过期: test\n"
+      },
+      "postflight": {
+        "rc": 1,
+        "output": "\n→ 1. scan-credentials\n   ✅\n→ 2. validate-handoff\n   ✅\n→ 3. handoff-lint\n   ✅\n→ 4. rotation-reminder\n   ❌ exit=1\n   🟠 3 天内过期: test\n→ 6. archive-devlog\n   ✅\n❌ postflight: 1 check(s) failed: rotation-reminder\n"
+      }
+    },
+    {
+      "id": "N07",
+      "case": "stem_reference_not_checked",
+      "stem": {
+        "rc": 0,
+        "output": "✅ xref-lint: write-target set clean\n"
+      },
+      "bare": {
+        "rc": 1,
+        "output": "<sandbox>/stem-xref/note.md: Decision 9999 -> no target\n❌ xref-lint: unresolved cross-refs or residual placeholders above\n"
+      }
+    },
+    {
+      "id": "N08",
+      "case": "emoji_free_regen",
+      "regen": {
+        "rc": 0,
+        "output": ""
+      },
+      "stats": [
+        "共 0 条；最新：(none)",
+        "共 0 条；最新：`(none)`",
+        "共 0 条"
+      ],
+      "actual_logs": 1,
+      "validate": {
+        "rc": 0,
+        "output": "⚠️  v2 marker present but pointer stat lines missing in HANDOFFX.md\n    (run regenerate_pointers to refresh, or /handoffx-tidy to repair)\n✅ HANDOFFX.md structure OK\n"
+      }
+    },
+    {
+      "id": "N09",
+      "case": "unparseable_expiry",
+      "checks": [
+        {
+          "value": "not-a-date",
+          "rotation": {
+            "rc": 0,
+            "output": ""
+          }
+        },
+        {
+          "value": "2020-05-01（备注）",
+          "rotation": {
+            "rc": 1,
+            "output": "🔴 已过期 2388 天: test\n"
+          }
+        }
+      ]
+    },
+    {
+      "id": "N10",
+      "case": "crlf_diagnostics",
+      "lint": {
+        "rc": 1,
+        "output": "❌ 0001-2026-11-14T1000-test.md: missing frontmatter (line 1 is not '---')\n"
+      },
+      "tidy": {
+        "rc": 0,
+        "output": "\n═══ tidy summary ═══\n✅ 结构干净\n"
+      }
+    },
+    {
+      "id": "N11",
+      "case": "duplicate_predicate_format_timezone",
+      "quoted_UTC": {
+        "rc": 3,
+        "output": "⚠️ 检测到可能重复：\n  上一条: 0 分钟前 \"test\" 改动文件: {src/a.ts}\n  本次:   改动文件: {src/a.ts}  ← 完全相同\n"
+      },
+      "quoted_Asia_Shanghai": {
+        "rc": 0,
+        "output": "ok\n"
+      },
+      "bare_UTC": {
+        "rc": 0,
+        "output": "ok\n"
+      }
+    },
+    {
+      "id": "N12",
+      "case": "missing_project_root",
+      "number": {
+        "rc": 0,
+        "output": "0001\n"
+      },
+      "duplicate": {
+        "rc": 0,
+        "output": "first-entry\n"
+      }
+    }
+  ],
+  "work_items": [
+    {
+      "id": "R01",
+      "priority": "P1",
+      "decision": "必须修复",
+      "title": "显式检查目标漏扫",
+      "sources": "F04; N02",
+      "location": "scripts/handoff-postflight.sh:121; scripts/scan-credentials.sh:256-311",
+      "evidence": "显式v1文件直接扫描exit1，postflight却exit0。",
+      "solution": "扫描集合必须包含显式选中的主文件，再合并布局文件；统计实际覆盖，区分无输入与未命中。",
+      "acceptance": "旧布局和自定义主文件的模拟凭证均被拦截；不得以0文件扫描代表安全。"
+    },
+    {
+      "id": "R02",
+      "priority": "P1",
+      "decision": "必须修复",
+      "title": "memory先删后复制及成功误报",
+      "sources": "B02",
+      "location": "scripts/sync-memory.sh:88-107,183-194",
+      "evidence": "复制失败会丢旧副本；on仍报告同步成功。",
+      "solution": "目标同目录暂存，显式检查复制与扫描，成功后替换；区分IO失败与凭证命中。",
+      "acceptance": "on/sync失败均非零、旧副本不变、不增加成功计数。"
+    },
+    {
+      "id": "R03",
+      "priority": "P1",
+      "decision": "必须修复",
+      "title": "归档同名覆盖历史",
+      "sources": "B01",
+      "location": "scripts/archive-devlog.sh:53-64",
+      "evidence": "同名不同内容被覆盖，脚本exit0。",
+      "solution": "预检目标冲突；内容相同幂等，不同则保留并拒绝；记录部分进度。",
+      "acceptance": "同名、重复执行、中途失败均不丢原始内容。"
+    },
+    {
+      "id": "R04",
+      "priority": "P1",
+      "decision": "必须修复",
+      "title": "检查失败仍执行归档",
+      "sources": "B03",
+      "location": "scripts/handoff-postflight.sh:120-160",
+      "evidence": "错误条目第一次报错后被归档，第二次不修内容也全绿。",
+      "solution": "先汇总只读检查，再决定是否维护；检查失败不得移动条目；明确check/maintain边界。",
+      "acceptance": "失败运行保持输入字节与路径不变；重跑不能掩盖同一错误。"
+    },
+    {
+      "id": "R05",
+      "priority": "P1",
+      "decision": "必须修复",
+      "title": "tidy重号修复破坏元数据；v2诊断不完整",
+      "sources": "D01,F02,F06; N01,N05",
+      "location": "scripts/tidy-handoff.sh:106-136,469-571",
+      "evidence": "重命名到0002后number仍0001；缺验证字段的v2条目tidy也报告干净。",
+      "solution": "事务化更新文件名和frontmatter；v2诊断覆盖sibling；旧编号引用有歧义时报告而非猜测改写。",
+      "acceptance": "合法重号fixture经tidy后lint通过；未修复的问题必须定位且不能称全面干净。"
+    },
+    {
+      "id": "R06",
+      "priority": "P2",
+      "decision": "必须修复",
+      "title": "frontmatter边界及CRLF诊断",
+      "sources": "B04,G04,G11; N10",
+      "location": "scripts/handoff-lint.sh:94-108; scripts/tidy-handoff.sh:369-425",
+      "evidence": "空frontmatter能借正文通过；正常CRLF条目被误报缺frontmatter。",
+      "solution": "共享有界元数据解析器；校验闭合、重复键；明确CRLF支持或可选保内容转换，不默认全文件删CR。",
+      "acceptance": "空/未闭合/重复/正文伪字段均有反例；CRLF错误准确，转换仅改变行尾。"
+    },
+    {
+      "id": "R07",
+      "priority": "P2",
+      "decision": "必须修复",
+      "title": "引用语法、归档解析与写入集不一致",
+      "sources": "D02,F10,F11; N03,N07",
+      "location": "scripts/lib/handoff-xref-grammar.sh:54-72; skills/handoffx/references/handoffx-write.md:113,154-159",
+      "evidence": "规范要求的完整stem悬空仍绿；归档后真实编号引用反而红；示例未列条件写入目标。",
+      "solution": "统一完整stem精确匹配、裸编号唯一性和archive解析；保留旧日期样式边界；从真实写入清单生成--files。",
+      "acceptance": "缺失完整stem被拦；已归档目标可解析；重号歧义被报告；Gotcha/Decision均进入当次写入集。"
+    },
+    {
+      "id": "R08",
+      "priority": "P2",
+      "decision": "必须修复",
+      "title": "文件替换原子性与权限不一致",
+      "sources": "B12,F05; N04",
+      "location": "scripts/lib/handoff-v2.sh:243,299,319,351; scripts/tidy-handoff.sh:352-354,430-437",
+      "evidence": "regen将0664改为0600已复现；跨卷及cp中断损坏为静态风险。",
+      "solution": "抽取同目录暂存与替换工具，显式保留约定权限/元数据；失败保留旧文件；不要把秒级mtime当锁。",
+      "acceptance": "0664保持；写入失败不截断正式文件；补跨卷/权限故障测试。"
+    },
+    {
+      "id": "R09",
+      "priority": "P2",
+      "decision": "需要统一规则后修复",
+      "title": "轮换提醒的严重度与非法日期",
+      "sources": "G03,G08,D08,F03; N06,N09",
+      "location": "scripts/rotation-reminder.sh:48-81; scripts/handoff-postflight.sh:168-174",
+      "evidence": "3天内到期导致总FAIL；not-a-date无提示exit0；带尾注的日期在本机可识别。",
+      "solution": "先定义pass/warn/fail/error；建议临近到期为warn、不可读为error，已过期策略显式配置；非法日期不得静默忽略。",
+      "acceptance": "每个状态有独立fixture及机器输出；BSD/GNU对同一受支持格式语义一致。"
+    },
+    {
+      "id": "R10",
+      "priority": "P2",
+      "decision": "必须修复",
+      "title": "章节标题和指针统计契约漂移",
+      "sources": "G07; N08",
+      "location": "scripts/lib/handoff-v2.sh:253-274; scripts/validate-handoff.sh:114-129",
+      "evidence": "无emoji标题通过validate，但regen不更新，1条日志仍显示0条。",
+      "solution": "各工具共享章节识别语法；doctor/check对计数和最新指针做一致性校验。",
+      "acceptance": "带/不带emoji均更新；计数错误能被明确检测，不能建议执行一个无效的regen循环。"
+    },
+    {
+      "id": "R11",
+      "priority": "P2",
+      "decision": "必须修复",
+      "title": "v1归档阈值参数非法仍写入",
+      "sources": "B05",
+      "location": "scripts/archive-devlog.sh:82-83,126-130",
+      "evidence": "abc出现错误但exit0且修改文件；负数移走全部条目。",
+      "solution": "写入前验证参数，明确0的含义，非法值统一用法错误。",
+      "acceptance": "abc、负数等退出2且所有输入不变。"
+    },
+    {
+      "id": "U01",
+      "priority": "P2",
+      "decision": "建议升级",
+      "title": "初始化与缺件修复统一",
+      "sources": "B08,G02,D05,F07",
+      "location": "install.sh:1484-1495; skills/handoffx/references/handoffx-init.md:18-25",
+      "evidence": "template只建主文件；init对已有marker只引导recall/tidy，缺少补件路径。",
+      "solution": "共享hx init实现；新增安全repair只补缺失件；已有文件不覆盖。",
+      "acceptance": "安装模板→初始化→检查→空项目recall全链路通过。"
+    },
+    {
+      "id": "U02",
+      "priority": "P2",
+      "decision": "建议升级",
+      "title": "doctor、项目根与配置路径诊断",
+      "sources": "B09,B10,F08; N12",
+      "location": "install.sh:170-178,383-388; scripts/hx.sh:61-74,274-286",
+      "evidence": "错误根目录仍返回0001/first-entry；自定义配置路径未采用；CLI版本可能被PATH遮蔽。",
+      "solution": "doctor显示实际CLI与Skill路径、版本、重复安装、配置优先级；写入前校验项目根；首条模式显式区分。",
+      "acceptance": "子目录/错误根不生成孤儿条目；输出可解释；不自动卸载或覆盖。"
+    },
+    {
+      "id": "U03",
+      "priority": "P2",
+      "decision": "建议升级",
+      "title": "分层recall及活跃状态摘要",
+      "sources": "B07,B14,G09",
+      "location": "skills/handoffx/references/handoffx-recall.md:32-70",
+      "evidence": "前轮测得默认必读约140KB，GOTCHAS/Current State持续增长。",
+      "solution": "可选brief/full/topic；预算使用实际模型tokenizer或显式字节估算；固定关键风险，展示省略量和补读路径。",
+      "acceptance": "200条Gotcha下预算可控；高风险约束保留；历史不可被自动摘要覆盖或删除。"
+    },
+    {
+      "id": "U04",
+      "priority": "P2",
+      "decision": "建议升级",
+      "title": "检查去重、单次解析与安全增量",
+      "sources": "B06,G05,D07; F附加建议",
+      "location": "scripts/handoff-postflight.sh:121-123; scripts/validate-handoff.sh:136-142; scripts/scan-credentials.sh:230-306",
+      "evidence": "同一postflight跑两次完整lint；500短日志约21秒。",
+      "solution": "先去重复lint，再单次解析/低进程数扫描；后续缓存需规则版本、删除/重命名/内容变化失效；保留全量模式。",
+      "acceptance": "新旧发现集合一致；同机同数据多次计时；不得默认跳过归档安全检查。"
+    },
+    {
+      "id": "U05",
+      "priority": "P2",
+      "decision": "建议升级",
+      "title": "v2行为评测及平台/故障矩阵",
+      "sources": "B13,G01,D03,F09",
+      "location": "skills/handoffx/evals/evals.json; .github/workflows/ci.yml",
+      "evidence": "eval期待仍按v1内联写入；CI只有Ubuntu；既有39套全绿未覆盖新反例。",
+      "solution": "迁移eval为v2四件套并保留单独旧版升级样例；补macOS/Bash3.2、失败不变性、三CLI操作级评测。",
+      "acceptance": "正确v2通过，旧错误路径被拒；每个修复附复现回归用例。"
+    },
+    {
+      "id": "U06",
+      "priority": "P2",
+      "decision": "建议升级",
+      "title": "完整写入事务与多Agent协作",
+      "sources": "B11,G06,F01",
+      "location": "scripts/lib/handoff-v2.sh:94-141",
+      "evidence": "只锁取号读取，同机两次均可拿0001；秒级mtime不能提供事务保证。",
+      "solution": "append/reserve到提交全流程定义锁与状态；未完成占位不可当作正式日志；跨机采用独立冲突策略。",
+      "acceptance": "并发8写不重号、不丢状态；崩溃可恢复；不承诺本地锁解决跨机同步。"
+    },
+    {
+      "id": "U07",
+      "priority": "P2",
+      "decision": "建议升级",
+      "title": "重复检测的结构化路径及时间语义",
+      "sources": "G10,F12; N11",
+      "location": "scripts/hx.sh:295-337",
+      "evidence": "同一近期条目UTC判重复、上海时区判ok；路径不加反引号也判ok。",
+      "solution": "添加兼容epoch/UTC偏移及结构化changed_files；保留旧格式降级解析；信息不足返回unknown/warn而非无条件ok。",
+      "acceptance": "跨时区同一事件结论一致；裸路径、删除/重命名、无文件改动等有明确契约。"
+    },
+    {
+      "id": "U08",
+      "priority": "P3",
+      "decision": "需评估后升级",
+      "title": "凭证规则扩展与误报控制",
+      "sources": "G12,D04",
+      "location": "scripts/scan-credentials.sh:37-63",
+      "evidence": "厂商前缀与通用密码规则有已声明边界，不等同扫描器保证识别所有秘密。",
+      "solution": "优先高置信规则；每条有正反例、占位符处理和规则版本；低置信提示与阻断分开。",
+      "acceptance": "报告precision/recall样本；不得声称JWT等前缀零误报。"
+    },
+    {
+      "id": "U09",
+      "priority": "P3",
+      "decision": "建议升级",
+      "title": "指令与结果单一来源",
+      "sources": "D06,B10; F附加建议",
+      "location": "skills/handoffx/SKILL.md; skills/handoffx/command-shims; skills/handoffx/references",
+      "evidence": "升级指令重复多处；回显模板遗漏lint/xref，容易漂移。",
+      "solution": "共享步骤或生成式shim；统一状态数据生成终端/JSON；保留独立命令入口必要指引。",
+      "acceptance": "升级退出码语义一致；每个已执行检查有状态；警告不被安静地丢掉。"
+    },
+    {
+      "id": "U10",
+      "priority": "P3",
+      "decision": "暂缓文件名变更，先改善展示",
+      "title": "中文标题的可读索引",
+      "sources": "F附加建议",
+      "location": "scripts/lib/handoff-v2.sh:34-71",
+      "evidence": "中文标题可能退化为hash slug，目录扫读困难。",
+      "solution": "优先提供标题索引和hx list；不先破坏ASCII文件名兼容约定。",
+      "acceptance": "人类无需逐文件读取即可找日志；既有路径和引用保持稳定。"
+    },
+    {
+      "id": "U11",
+      "priority": "P3",
+      "decision": "建议升级",
+      "title": "发布溯源与文档漂移诊断",
+      "sources": "B14",
+      "location": "Release/v4.2.1; VERSION; HANDOFFX.md",
+      "evidence": "DeepAudit三项失败为当前根文档与历史发布文档差异。",
+      "solution": "按发布来源commit/manifest核验产物，当前树漂移单独报告；概览与活跃状态明确更新责任。",
+      "acceptance": "历史发布不可为消红被覆写；能区分产物损坏与发布后源码更新。"
+    }
+  ],
+  "limitations": [
+    "Model reviews are static, not independent execution of regression suites.",
+    "OpenCode daemon read the live working tree rather than subprocess cwd copies; hashes match supplied snapshot. Flash also read .gitignore and ran one read-only find listing.",
+    "Cross-filesystem write failure and Linux runtime not exercised in this round.",
+    "Prior 39-suite test and benchmark results reused after checking relevant source equality."
+  ]
+}

@@ -1,0 +1,42 @@
+# Release sanitizer allowlist for intentional test fixtures and documented path examples.
+tests/test_sync_memory.sh
+tests/test_encode_cc_path.sh
+# Credential-looking fixtures the scanner tests consume (slack/anthropic/github/aws/… samples).
+# gitx v1.13 only auto-exempts tests/fixtures/ when scanning itself; a project must say so here,
+# and the pattern needs the trailing `*` — a bare `tests/fixtures/` matches no file.
+tests/fixtures/*
+# Gotcha narrative inside a test-built fixture quotes a PEM header to document a grep trap.
+tests/test_tidy_handoff.sh
+scripts/encode-cc-path.sh
+skills/handoffx/scripts/encode-cc-path.sh
+skills/handoffx/evals/*
+# Sanitizer behavior demonstrations — Scenarios 4.1/4.2 deliberately include sensitive-looking
+# strings (Supabase key sample + a <dev-home>/project path example) to document scanner triggers.
+TEST-SCENARIOS.md
+# Internal planning documents capture dev-time absolute paths; not user-facing artifacts.
+docs/superpowers/plans/*
+docs/superpowers/specs/*
+docs/2026-10-31-p2-2b-release-layout-design.md
+docs/2026-10-31-p2-2b-release-layout-plan.md
+
+# v2 multi-file layout (v2.1.0+) — Dev Log entries, Decisions, transfer guides,
+# and the v1 backup narrate dev-time work; they intentionally embed absolute
+# paths and machine-specific examples as part of the historical record, not
+# deployable config. Closes the K4 release-sanitize manual mv-files workaround.
+Handoffx_Logs/*
+Handoffx_Decisions/*
+GOTCHAS.md
+# Note: 旧主文件的 .pre-v2-backup 备份 / NEXT_SESSION_NOTES.md / Mac Project Transfer.md
+# 已在 2026-05-13 Decision 0018 D 落地时删除（电脑转移残留，公开不合规）
+
+# v2.2.1+ GitHub publish 公开仓元文件（合法 contact email + git identity literals）
+SECURITY.md
+CODE_OF_CONDUCT.md
+CHANGELOG.md
+docs/GITHUB_RELEASE_SOP.md
+scripts/release-publish-github.sh
+scripts/release-publish-github-backfill.sh
+scripts/release-sanitize-public.sh
+
+# publish worktree 是 release-time 临时目录，不进 release 产物
+.github-publish-wt/

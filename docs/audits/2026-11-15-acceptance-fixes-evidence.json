@@ -1,0 +1,442 @@
+{
+  "date": "2026-11-15",
+  "timezone": "America/Los_Angeles",
+  "scope": "Ordered usability/runtime fixes; selected real CLI cases, not a full model matrix or release audit",
+  "overall": "CORE_FIXES_VERIFIED_WITH_CLAUDE_WRITE_TARGET_COVERAGE_GAP",
+  "version": "4.2.1",
+  "committed": false,
+  "released": false,
+  "pushed": false,
+  "new_production_python_dependency": false,
+  "counting_rule": "All visible assistant text, including progress, counted in Unicode code points; exclude reasoning/tool output and duplicate final replay; not a guarantee about host tool cards.",
+  "static_tests": {
+    "suites": 41,
+    "total": 2418,
+    "per_suite": {
+      "test_archive_devlog.sh": 61,
+      "test_bundle_sync.sh": 6,
+      "test_ci_workflow.sh": 11,
+      "test_doc_freshness.sh": 7,
+      "test_doc_freshness_bguard.sh": 39,
+      "test_doc_freshness_k4_chicken_egg.sh": 0,
+      "test_doc_freshness_seam.sh": 1,
+      "test_encode_cc_path.sh": 7,
+      "test_handoff_lint.sh": 72,
+      "test_handoff_postflight.sh": 73,
+      "test_handoff_postflight_parallel.sh": 15,
+      "test_handoff_recall_v2.sh": 10,
+      "test_handoff_runtime.sh": 68,
+      "test_handoff_schema.sh": 36,
+      "test_handoff_v2_schema.sh": 34,
+      "test_handoff_xref_lint.sh": 85,
+      "test_handoffx_tidy.sh": 79,
+      "test_handoffx_upgrade.sh": 305,
+      "test_hx_cli.sh": 209,
+      "test_install.sh": 349,
+      "test_legacy_names_guard.sh": 56,
+      "test_migrate_to_v2.sh": 65,
+      "test_no_legacy_templates.sh": 5,
+      "test_project_tree_forbidden.sh": 0,
+      "test_quiet_output_contract.sh": 17,
+      "test_recommended_consistency.sh": 0,
+      "test_release_artifact_content.sh": 0,
+      "test_release_dry_run_audit.sh": 11,
+      "test_release_layout_contract.sh": 129,
+      "test_release_publish_gates.sh": 27,
+      "test_release_sanitize_credscan.sh": 36,
+      "test_review_loop.sh": 176,
+      "test_rotation_reminder.sh": 25,
+      "test_scan_credentials.sh": 122,
+      "test_scripts_sync.sh": 2,
+      "test_shellcheck.sh": 0,
+      "test_skill_metadata_budget.sh": 3,
+      "test_sync_codex_skills.sh": 5,
+      "test_sync_memory.sh": 33,
+      "test_tidy_handoff.sh": 172,
+      "test_validate_handoff.sh": 67
+    }
+  },
+  "macos": {
+    "bash": "3.2.57",
+    "exit_code": 0,
+    "suites": 41,
+    "runtime_passed": 4007,
+    "runtime_failed": 0,
+    "summary_lines": 41,
+    "skips": 0,
+    "all_suites_passed": true
+  },
+  "linux": {
+    "command": "bash tests/linux-container.sh",
+    "exitcode": 0,
+    "elapsed_seconds": 96.27,
+    "timed_out": false,
+    "container_id": "507e870ae083e731c95397359e0fdfae78b095cd796812f5d551dfd0b366c19b",
+    "suite_counts": {
+      "suites": 41,
+      "runtime_passed": 3984,
+      "runtime_failed": 0,
+      "skips": 1,
+      "run_all_exit": 0
+    },
+    "log_boundary": "Wrapper output complete; supplementary run_all capture truncated at container teardown. Totals taken from wrapper summary."
+  },
+  "codex": {
+    "version": "0.165.0",
+    "model": "gpt-6-astra",
+    "cases": {
+      "write": {
+        "exit_code": 0,
+        "timeout": false,
+        "seconds": 104.4,
+        "project_unchanged": false,
+        "assistant_chars": 89,
+        "visible_messages": 1
+      },
+      "recall-fixed": {
+        "exit_code": 0,
+        "timeout": false,
+        "seconds": 25.29,
+        "project_unchanged": true,
+        "assistant_chars": 87,
+        "visible_messages": 1
+      },
+      "recall-repeat": {
+        "exit_code": 0,
+        "timeout": false,
+        "seconds": 24.07,
+        "project_unchanged": true,
+        "assistant_chars": 98,
+        "visible_messages": 1
+      },
+      "recall-default": {
+        "exit_code": 0,
+        "timeout": false,
+        "seconds": 23.3,
+        "project_unchanged": true,
+        "assistant_chars": 89,
+        "visible_messages": 1
+      }
+    },
+    "snapshot_differences": {
+      "codex-write": {
+        "files": 48,
+        "different_from_final_candidate": [
+          "SKILL.md",
+          "assets/HANDOFFX.template.md",
+          "references/handoffx-write.md",
+          "scripts/handoff-runtime.sh"
+        ]
+      },
+      "codex-recall-fixed": {
+        "files": 48,
+        "different_from_final_candidate": [
+          "SKILL.md",
+          "assets/HANDOFFX.template.md",
+          "references/handoffx-write.md"
+        ]
+      },
+      "codex-recall-repeat": {
+        "files": 48,
+        "different_from_final_candidate": [
+          "SKILL.md",
+          "assets/HANDOFFX.template.md",
+          "references/handoffx-write.md"
+        ]
+      },
+      "codex-recall-default": {
+        "files": 48,
+        "different_from_final_candidate": [
+          "SKILL.md",
+          "assets/HANDOFFX.template.md",
+          "references/handoffx-write.md"
+        ]
+      }
+    }
+  },
+  "opencode": {
+    "verdict": "CORE_ACCEPTANCE_PASSED_WITH_NONBLOCKING_INTERFACE_DEVIATION",
+    "version": "opencode v2.3.0",
+    "model": "tkx/glm-5.3",
+    "cases": [
+      {
+        "case": "write",
+        "passed": true,
+        "elapsed_seconds": 128.043,
+        "submission_exit": 0,
+        "wait_exit": 0,
+        "timed_out": false,
+        "visible_unicode_codepoints": 91,
+        "visible_blocks": 1,
+        "interface_deviations": []
+      },
+      {
+        "case": "recall",
+        "passed": true,
+        "elapsed_seconds": 21.132,
+        "submission_exit": 0,
+        "wait_exit": 0,
+        "timed_out": false,
+        "visible_unicode_codepoints": 91,
+        "visible_blocks": 1,
+        "interface_deviations": [
+          "Runtime helper received a normalized count rather than the full original argument; non-blocking when functional checks pass."
+        ]
+      }
+    ],
+    "scope": "Actual installed snapshot only; source SKILL.md changed during test window, runtime and tested write/recall reference hashes still match ending source."
+  },
+  "claude": {
+    "version": "2.1.312",
+    "model": "claude-opus-5-5",
+    "write": {
+      "exit": {
+        "exit_code": 0,
+        "timed_out": false,
+        "elapsed_seconds": 56.085,
+        "stream_credential_redactions": 0
+      },
+      "seconds": 56.085,
+      "visible_chars": 102,
+      "visible_messages": 1,
+      "write_target_set_complete": false,
+      "independent_full_target_validation_passed": true
+    },
+    "recall": {
+      "exit": {
+        "exit_code": 0,
+        "timed_out": false,
+        "elapsed_seconds": 34.055,
+        "stream_credential_redactions": 0
+      },
+      "visible_chars": 117,
+      "visible_messages": 1,
+      "readonly": true,
+      "snapshot": "claude-index-mktemp.Z6UsCM"
+    }
+  },
+  "installation": {
+    "passed": true,
+    "targets": {
+      "claude": {
+        "files_checked": 48,
+        "content_mismatches": [],
+        "rendered_shims": {
+          "handoffx-recall": true,
+          "handoffx-tidy": true,
+          "handoffx-memory": true,
+          "handoffx-init": true
+        }
+      },
+      "opencode": {
+        "files_checked": 48,
+        "content_mismatches": [],
+        "rendered_shims": {
+          "handoffx-recall": true,
+          "handoffx-tidy": true,
+          "handoffx-memory": true,
+          "handoffx-init": true,
+          "handoffx": true
+        }
+      },
+      "codex": {
+        "files_checked": 48,
+        "content_mismatches": [],
+        "aliases_present": {
+          "handoffx-recall": true,
+          "handoffx-tidy": true,
+          "handoffx-memory": true,
+          "handoffx-init": true
+        },
+        "recall_direct_reference": true
+      }
+    },
+    "backup_journal_present": true,
+    "backup_home_relative": ".handoffx-install/bak.20261115063722.56631",
+    "install_exit_code": 0
+  },
+  "limitations": [
+    "Claude final fresh write omitted GOTCHAS.md from --files; independent full-five-file xref and artifact checks passed, but the model workflow is not fully accepted.",
+    "reply validates a draft only; it cannot intercept subsequent model rewrites or suppress host-mandated UI.",
+    "OpenCode recall normalized the count rather than forwarding the full raw tail; correct three-log readonly result observed.",
+    "Real CLI results are bound to their installed snapshots; Codex/OpenCode were not all rerun after the final template/diagnostic edits."
+  ],
+  "evidence_locator": "/tmp/handoffx-fix-location",
+  "local_evidence_sha256": {
+    "runtime-template-red.log": "e9430d80208de2fce6c19d9b1fde25c1f5522e695d1c0aa50e0f9b9ee31c85b7",
+    "runtime-template-green.log": "26fed0b1131ae5008053361546861267e89e6836a3e9a418f3ef9dfa97a88f16",
+    "run_all-template-final.log": "d70ae86e514494a4e9132229060a9e8dc275310d955146739981b3d518bd9d07",
+    "hx-negative-control-final.log": "71f1c9346e10f97e0546575d043d3e9b44de9104cdc1f27393b2230e2206aaf3",
+    "run_all-accepted.log": "db846c33767721a8cd05f2cfac7804b9933ca5737a55cabadadb4421e469ffbb",
+    "run_all-accepted.exitcode": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+    "install-live-preview.log": "f862e6c1b264bca86f476edfc2f11c019d9704eda5f1e6137fb990aad62bdca9",
+    "install-live.log": "3b5404660c5ccf02f8e3ae537727ca88252a8d710b68e19e8db925e64adbb533",
+    "install-live-parity.json": "d3045d3340f9d0544f4a3755a768e432de045dba596010cdc2aa5209d073de3a",
+    "codex-installed-snapshot-comparison.json": "8a36fd0e5166e193fa702e97dcdc58f9df4ee2e8784e643b360075e44a6f5ffa",
+    "claude-frozen-write.apReyg/REPORT.md": "ed137d101979c653b92c71eed1ec3080055cfdff60086eef109ec82ae6612c6d",
+    "claude-frozen-write.apReyg/acceptance.json": "51d7cb892537a695b57517b5fbaf68fc8f4faf64bf565eb777def01dbcc11ba7",
+    "claude-frozen-write.apReyg/independent-validation/results.json": "20442327a1e0cb2d6649c9142522fe07958ac0157ef4285a68c74323a63c3021",
+    "opencode230-retest-4mj80ztf/SUMMARY.json": "69c63f91496bf69934178425f9b60b21ad128692545ab33066ada2b4da4db847",
+    "linux-final-fixed.QsXJCG/result.json": "ebfd6e4de202740ecd2c146daeaed153025b0da5e02478db98b1987d3910d069",
+    "linux-final-fixed.QsXJCG/wrapper.stdout.log": "ea2a6211bd5b25e7f0988c8a682d3a86b5d1104e7b2bd2d7de19670574db5f9b",
+    "docs-final.log": "ee2292a111906cb4550a1f72c55c206a38fae00435521c84895ea6abc1e6051f",
+    "scripts-sync-final.log": "281dde7313979d6cd2c77688327670a2ebf8eee67e9d3f458793752a4108bc3d",
+    "no-legacy-final.log": "87ae221f17cec646e97783698d423e5445c24f3cdf6b7d32ed1c0bd26fb83053",
+    "legacy-guard-delivery.log": "4ab71c6574bc81112c6c70dce7ad470b2b28cfb077b8a8d5893ee858c1f7d092",
+    "skill-validation-final.log": "db349825903d66adffea3ecf1bd8e1803043e8a71cf1a051235dabc5371f5bb0",
+    "install-live.exitcode": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+  },
+  "candidate_source_sha256": {
+    "VERSION": "e07a58056326e82d78ae4ea1b6bed3c1b4e7d151dd38d07bc56e26f020ae8d30",
+    "install.sh": "04793dc94e75f2fc951247c873fd67fb750d0f19bba92aaf6330f30325e76219",
+    "scripts/archive-devlog.sh": "5af5800e19bd5e9b7f6cd31a240e0a3dc6a4fa6e71baa34cd0fbd73dda774088",
+    "scripts/emit-sbom.sh": "0c3dcfd9a99c9f50dffbbceba189ab6adaa95bcf2e6aa38876d9c71497de245a",
+    "scripts/emit-token-usage.sh": "c5d0f2c983fa379eb46718d304ce5b4f0dcc2fadee498736ce07488f5c0b7301",
+    "scripts/encode-cc-path.sh": "970db3366ca6dcf81e309da2685daf830bc4552ce1d8bb39409ea46db7a428d7",
+    "scripts/handoff-lint.sh": "014a3958fc31bffbf9eb7b3f1a75bf0af64bc7faca15e29229d77c4e98c9c41f",
+    "scripts/handoff-postflight.sh": "eba100978850df7be910aafeb360b6399564603f71fe8ed7e3d4477df51680aa",
+    "scripts/handoff-runtime.sh": "22a96aa33e3674394658a77bd532815d39e4122c58476f59f6d03343a04ed906",
+    "scripts/handoff-xref-lint.sh": "1dca1db2536ac7203dcd838f9d2d49acbea3822fed7b6a37322699ac2c72932b",
+    "scripts/handoffx-upgrade.sh": "e1cf6613531b4ec3aedad7d409ce0b3860af5ef272f4f0258012609dfd5e95e0",
+    "scripts/hx.sh": "32012ae6f0e3653650e8eeb1a7506cdf6571ccfda1ac53bfb0d6370d3d01a0d6",
+    "scripts/lib/handoff-schema.sh": "a41eb664ac29c5d4c5de4fea5b5f57587fbcb50418a76efe1e8d70368f698479",
+    "scripts/lib/handoff-v2.sh": "c3c6a20b4b4380c0051de3f75efef9b34f4f6396ad3b51cefd4bf4aab7bcabfd",
+    "scripts/lib/handoff-xref-grammar.sh": "db75a07441c9374f2b0f4850631acd430b9884d977a9483bac52a09902c35261",
+    "scripts/lib/handoffx-tidy-migrate.sh": "b29e2ea74aef1a1466286edbed73dc6f53f1708cc1a5d400cebce2d84e2cb0d2",
+    "scripts/lib/install-output-style.sh": "d26a24edc61020b63a913a202ccb03037cd9093969e6d345f2643ca2b096e33f",
+    "scripts/migrate-to-v2.sh": "a010bfb3c4315b1ea0e981fb1f806d80ce2fe03b47fb62e2bd9ef9b1c054bca2",
+    "scripts/release-layout.sh": "d6431ee0c5a8c9f2c7e668aace78855ace9d32e091443b6849c380ac8b7da58c",
+    "scripts/release-publish-github-backfill.sh": "a387591a835aedb35157c781522a73ba5b4c5b6c5066f42a55d55d8829ac466d",
+    "scripts/release-publish-github.sh": "6905fb4edd9986634a006512352f3261bfd223f06331a23314fd42f1bfa9d3f5",
+    "scripts/release-sanitize-public.sh": "606494f3ca632c15afc1650f06273b27b2868d49d2839cc7c1223571c9e0038d",
+    "scripts/rotation-reminder.sh": "914ede8c7cfd24ef828c0dcb50e5569ae1465a3149ce228a711b8a89def0c3eb",
+    "scripts/scan-credentials.sh": "d25dd5e9ebb6d3c8dc6755cdc2f610f9855898ce2e6ffd71d9a7557ec1ef7189",
+    "scripts/scrub-tarball.sh": "33885b9caabbc3d58f88b772eb73a226bc5e9825879eb117eaeeb76f81117fa6",
+    "scripts/sync-codex-skills.sh": "2e0ec670a34d0990bf8fbe7a09db3398112dd94bcab6e142ae82d3e2bf590583",
+    "scripts/sync-memory.sh": "6d223f34dcf9625f73f871796f31d0412a83bcef1b403d9d544232ffcbe1f6eb",
+    "scripts/tidy-handoff.sh": "67e280bd315ce9a1b677592fa0bc106fcef5d3b0cdd8fb00aff98984d05c9f82",
+    "scripts/validate-handoff.sh": "fdde0de2eee4291c6b719d605854a2a168ec0973d2d721a043e747829fa4ca87",
+    "scripts/validate-skill-metadata.sh": "5dbc9a6f156cc96af33a7a3a33c950ffc171e0fbc38871410b47ac057c32e013",
+    "skills/handoffx/SKILL.md": "1e58bf7ce554902b3bbfacf03cfc9793a1326c33971863ee5a5a1d864b9bb823",
+    "skills/handoffx/VERSION": "e07a58056326e82d78ae4ea1b6bed3c1b4e7d151dd38d07bc56e26f020ae8d30",
+    "skills/handoffx/agents/codex-commands.txt": "74d41e3c333970a88555e634d63d727a170e11b095044716586656d94b246972",
+    "skills/handoffx/assets/GOTCHAS.template.md": "a543811fd2349f8d4f83d67f7b7501f4e391f0e5f63ef3f0b9671a014044ec21",
+    "skills/handoffx/assets/HANDOFFX.template.md": "16614e4033b9b33cae0c2980c8721089e73674350dba5f5716287b1bea606fd0",
+    "skills/handoffx/command-shims/handoffx-init.md": "8ce9a0e73ee82a6239da5c3ff14f3423d08411465bd048511fcee5b8d4a89f80",
+    "skills/handoffx/command-shims/handoffx-memory.md": "ba86eadfd06c8397c4c70af0e130b11223501535e91bb1514dedb960ae03dffd",
+    "skills/handoffx/command-shims/handoffx-recall.md": "7956227b8ad8a226e8d1879ef1badfd3df23cb5d8cb8284b753a38bf977979a9",
+    "skills/handoffx/command-shims/handoffx-tidy.md": "933e6a7f33f07a011b987e2b990b5cfcd3bb2cec3340be674bd4e9c010b04385",
+    "skills/handoffx/command-shims/handoffx.md": "ffe37781c7b6edf3e033306c031c241727b1f1a3332a605c66716f94dc6d24fe",
+    "skills/handoffx/evals/evals.json": "2a18ac9a834a18d72df176723da691a4ed857b15ef6e4d1fa40537d78857de4c",
+    "skills/handoffx/evals/files/legacy-v1/HANDOFF.md": "5e4cb374b9c7ead0ec5256abd5e0e1917e5ea1dff26cd58c125d539e6ca97625",
+    "skills/handoffx/evals/files/sample-HANDOFFX.md": "5e4cb374b9c7ead0ec5256abd5e0e1917e5ea1dff26cd58c125d539e6ca97625",
+    "skills/handoffx/evals/files/v2/GOTCHAS.md": "1e93e523c20158afb33e24576d1e167c00cf033daf023f98839ae984521cee05",
+    "skills/handoffx/evals/files/v2/HANDOFFX.md": "6e91e2747e4226b34dc14801e0ba7ed058163b6ce84185aadfeec5f952216d85",
+    "skills/handoffx/evals/files/v2/Handoffx_Decisions/0001-2026-03-05-queue-engine.md": "33e60e8e4e1e4bf09932195585a094f468836fef511c3cdd66fdae5a1fffe2f8",
+    "skills/handoffx/evals/files/v2/Handoffx_Logs/0001-2026-04-01T0900-orderflow-update.md": "d62be6d587015732e337d15d3e80678ff0c6e0d0373ce2520fc077de813b8695",
+    "skills/handoffx/evals/files/v2/Handoffx_Logs/0002-2026-04-02T0900-orderflow-update.md": "b781d29bb86b18a16f343c945a8ed8a383dcb35b25222a2798cf306c1a33b79e",
+    "skills/handoffx/evals/files/v2/Handoffx_Logs/0003-2026-04-03T0900-orderflow-update.md": "4b23e262144d3e84f174f3c9ce475e5badf2ea8962ee2280cbe180ac901f16d2",
+    "skills/handoffx/evals/files/v2/Handoffx_Logs/0004-2026-04-04T0900-orderflow-update.md": "25f137d366546206760bab9b7ea8d87b4f8645cacc28cf0382bbb73a6a5fbd0e",
+    "skills/handoffx/evals/files/v2/Handoffx_Logs/0005-2026-04-05T0900-orderflow-update.md": "fdcc88e226bed7303bf11a2ac61f9746e7b35886607fa70778a04273a156f1da",
+    "skills/handoffx/evals/files/v2/Handoffx_Logs/0006-2026-04-06T0900-orderflow-update.md": "58a64a4f99ba1c2138803a6dc09720601b69cd473feeace978149755c518818e",
+    "skills/handoffx/evals/files/v2/Handoffx_Logs/0007-2026-04-15T1422-redis-pubsub-fix.md": "5addae37084c52c814537cab085286874f08320a8b9b88dd8f415a03e18f46b9",
+    "skills/handoffx/references/handoffx-init.md": "3709139cece159139195fd2e8872262486e9ec62c345893b2c9642636f965494",
+    "skills/handoffx/references/handoffx-memory.md": "a20448915ec0050a354cb7b6b0bc29a0652f57d1a6fee5e14757be59b2a866b9",
+    "skills/handoffx/references/handoffx-recall.md": "e9aa6cfc121c9e0623c5470dbbf234dcb80271614d7c5b99c60f16aa23ec7fdd",
+    "skills/handoffx/references/handoffx-tidy.md": "53a9b01749fb6720143afebd8e1faf75369a1d0dff26fd618aa91f3fad03b0fe",
+    "skills/handoffx/references/handoffx-write.md": "6eaff348fa386c2900ad94e6e4c3a6ac4c3354cd28052fee303146c5702b1224",
+    "skills/handoffx/references/layout-gate.md": "ee37021b9c826b90ebfd9254131999f5cb354459ba94317dc7329d839f8fb8ad",
+    "skills/handoffx/references/migration-order.md": "83cdaff05e054b3cce855b30431c0e4a653022d715d4b63f8d7d4552c7b12bc0",
+    "skills/handoffx/scripts/archive-devlog.sh": "5af5800e19bd5e9b7f6cd31a240e0a3dc6a4fa6e71baa34cd0fbd73dda774088",
+    "skills/handoffx/scripts/emit-sbom.sh": "0c3dcfd9a99c9f50dffbbceba189ab6adaa95bcf2e6aa38876d9c71497de245a",
+    "skills/handoffx/scripts/emit-token-usage.sh": "c5d0f2c983fa379eb46718d304ce5b4f0dcc2fadee498736ce07488f5c0b7301",
+    "skills/handoffx/scripts/encode-cc-path.sh": "970db3366ca6dcf81e309da2685daf830bc4552ce1d8bb39409ea46db7a428d7",
+    "skills/handoffx/scripts/handoff-lint.sh": "014a3958fc31bffbf9eb7b3f1a75bf0af64bc7faca15e29229d77c4e98c9c41f",
+    "skills/handoffx/scripts/handoff-postflight.sh": "eba100978850df7be910aafeb360b6399564603f71fe8ed7e3d4477df51680aa",
+    "skills/handoffx/scripts/handoff-runtime.sh": "22a96aa33e3674394658a77bd532815d39e4122c58476f59f6d03343a04ed906",
+    "skills/handoffx/scripts/handoff-xref-lint.sh": "1dca1db2536ac7203dcd838f9d2d49acbea3822fed7b6a37322699ac2c72932b",
+    "skills/handoffx/scripts/handoffx-upgrade.sh": "e1cf6613531b4ec3aedad7d409ce0b3860af5ef272f4f0258012609dfd5e95e0",
+    "skills/handoffx/scripts/hx.sh": "32012ae6f0e3653650e8eeb1a7506cdf6571ccfda1ac53bfb0d6370d3d01a0d6",
+    "skills/handoffx/scripts/lib/handoff-schema.sh": "a41eb664ac29c5d4c5de4fea5b5f57587fbcb50418a76efe1e8d70368f698479",
+    "skills/handoffx/scripts/lib/handoff-v2.sh": "c3c6a20b4b4380c0051de3f75efef9b34f4f6396ad3b51cefd4bf4aab7bcabfd",
+    "skills/handoffx/scripts/lib/handoff-xref-grammar.sh": "db75a07441c9374f2b0f4850631acd430b9884d977a9483bac52a09902c35261",
+    "skills/handoffx/scripts/lib/handoffx-tidy-migrate.sh": "b29e2ea74aef1a1466286edbed73dc6f53f1708cc1a5d400cebce2d84e2cb0d2",
+    "skills/handoffx/scripts/lib/install-output-style.sh": "d26a24edc61020b63a913a202ccb03037cd9093969e6d345f2643ca2b096e33f",
+    "skills/handoffx/scripts/migrate-to-v2.sh": "a010bfb3c4315b1ea0e981fb1f806d80ce2fe03b47fb62e2bd9ef9b1c054bca2",
+    "skills/handoffx/scripts/rotation-reminder.sh": "914ede8c7cfd24ef828c0dcb50e5569ae1465a3149ce228a711b8a89def0c3eb",
+    "skills/handoffx/scripts/scan-credentials.sh": "d25dd5e9ebb6d3c8dc6755cdc2f610f9855898ce2e6ffd71d9a7557ec1ef7189",
+    "skills/handoffx/scripts/sync-codex-skills.sh": "2e0ec670a34d0990bf8fbe7a09db3398112dd94bcab6e142ae82d3e2bf590583",
+    "skills/handoffx/scripts/sync-memory.sh": "6d223f34dcf9625f73f871796f31d0412a83bcef1b403d9d544232ffcbe1f6eb",
+    "skills/handoffx/scripts/tidy-handoff.sh": "67e280bd315ce9a1b677592fa0bc106fcef5d3b0cdd8fb00aff98984d05c9f82",
+    "skills/handoffx/scripts/validate-handoff.sh": "fdde0de2eee4291c6b719d605854a2a168ec0973d2d721a043e747829fa4ca87",
+    "skills/handoffx/scripts/validate-skill-metadata.sh": "5dbc9a6f156cc96af33a7a3a33c950ffc171e0fbc38871410b47ac057c32e013",
+    "tests/common.sh": "f43f4f18cf206ea59c12237e861f013d7d11c82949cf5fa39995aa229c4b798a",
+    "tests/linux-container.sh": "79e43ee329ee2e654df09a63a5104e1041d960e05bf46c72250a008802869e58",
+    "tests/run_all.sh": "7b7c4d52abcf97f52f61a4a0f1b1467a74a0daadca9a32ce15ea4070e69be6db",
+    "tests/test_archive_devlog.sh": "fd2071c364b41ffe88aadce6fd8382b8eb2f17da32f58de702d10b1d505eab5c",
+    "tests/test_bundle_sync.sh": "bd0cb0075638b74824b78c6229aad9e0422ba609505d1f86e888ef907a988fc7",
+    "tests/test_ci_workflow.sh": "9cb035f4e8f0cb416c6da9dbdb17f644eb48765c727b77542fbd77c4c77c576b",
+    "tests/test_doc_freshness.sh": "3c2823244407bd512ce58259dcf6fcfdac82d1ac7280039328d2c160bd1ed7eb",
+    "tests/test_doc_freshness_bguard.sh": "49b9e2f78a1f4c900a81392a6db4a86a0f01e75c4ae73a41fc8334f180a06f1f",
+    "tests/test_doc_freshness_k4_chicken_egg.sh": "31eac45ef252a588f54d00b57f1054d103d32e218ea96aebc536f6e2ac2f2c7d",
+    "tests/test_doc_freshness_seam.sh": "b01df376ceb93e5ccb8f943faed0b45f4cbd65f285a4e1b8dd6d521f07e86b4b",
+    "tests/test_encode_cc_path.sh": "0ef5441210229a20555e5363a954099cf5be6c38b6cbd1319e8ded38903018eb",
+    "tests/test_handoff_lint.sh": "c527626df94e28b3f9e746ca760ba2b9d4b30a41e9383c72d740d6ea5013c881",
+    "tests/test_handoff_postflight.sh": "7fd6a2413addf0016b7c8d845000fed16795bf09e65a18b516bf05cfe712c246",
+    "tests/test_handoff_postflight_parallel.sh": "41e65118f86429731d8f555a8f08380e7e4830f4510cc4bc7ef16b26abd04275",
+    "tests/test_handoff_recall_v2.sh": "561e2a812fff5e3faf7ec837aa1f17ac275ca8470e59353b139239a038bd210b",
+    "tests/test_handoff_runtime.sh": "d0e6d78623dbba6344a342f91fe778e252bf3380b0311ae63cd9610e38b57e18",
+    "tests/test_handoff_schema.sh": "8b9dc6681ec76984f3a6f38d1cbe71d1fd6c6e901fa5cd0d6b7256437f7760a4",
+    "tests/test_handoff_v2_schema.sh": "54c7643f2e33df6f69db438dc1b45f96769a7f6c171526d919090a194eeaee33",
+    "tests/test_handoff_xref_lint.sh": "9506c52c2a8c3e6e33bcd1c93f196999ba65471201f4b29f44614b2784cf9c77",
+    "tests/test_handoffx_tidy.sh": "944964a5d5bd682523c3d52a9b1b9e735d572c51f2d087915696ebec3e4cf4b6",
+    "tests/test_handoffx_upgrade.sh": "11072fde222b384dfa5017a909549c496acb9186fbde8350a68308540fe2d52d",
+    "tests/test_hx_cli.sh": "36eb48cedacb809150019a35a82f00440f1b96294ee43caa96b2cf555e0bb72a",
+    "tests/test_install.sh": "0ab9bbfac2ac04c8031f28490c536f9998743623a7d411a46f4761d5895240cf",
+    "tests/test_legacy_names_guard.sh": "f618c891545c021de8654f0b5457c3543eeb3e19d920bb3ffa18521e22eb2a3c",
+    "tests/test_migrate_to_v2.sh": "92eb07a6a54feff9edc39a65bede8681f81d427952a570ad6d71ddef196b8790",
+    "tests/test_no_legacy_templates.sh": "d01ba2e06ee26bec48252005d9f27f92e23b714e93e08837886f7dc37b4cccca",
+    "tests/test_project_tree_forbidden.sh": "3ac300b0cc84471ea458a4087653e7c031bc1f0341fcea29a0cca17cb1eb2731",
+    "tests/test_quiet_output_contract.sh": "fdc0c217153a0bc9d867422a2bdd3dc1dbde2637cf6d5439b0434ea8989a7e54",
+    "tests/test_recommended_consistency.sh": "4df3a04b5a85bfcf2052aaed456d8c39ae039b4fdaeb21962d85da9e9b198d7a",
+    "tests/test_release_artifact_content.sh": "9e3ee83518428e2c4c86773e9165e9faa7f52905e7400639f2a41e25e334e72f",
+    "tests/test_release_dry_run_audit.sh": "421d412171c5c67866d50c721fd16a01cba45e3a8ae0c48a94e6254b4a220b0c",
+    "tests/test_release_layout_contract.sh": "f4d25b453437d440d0fae9b8d0758e7b1e654be2a9b9b740a5b212ac7f5f11aa",
+    "tests/test_release_publish_gates.sh": "07416c1eb9522c532bc7350d85c686a6e75756ccb8ef36da45d2c89f9c180618",
+    "tests/test_release_sanitize_credscan.sh": "a159275e16e558b43626bcd054ab85364a1e85ff908764e9f4ec99d3434b2d28",
+    "tests/test_review_loop.sh": "46bc8c54e74cae14dfa50f165b365ec857047f319e826b31685e986d959cc54f",
+    "tests/test_rotation_reminder.sh": "5c463c7f8a2ab0e7b0b077d13ea88d38f74da1a5f687e89c6ec9caa1da1764ec",
+    "tests/test_scan_credentials.sh": "61deb3fc81015ca1c7bb53f5c294e6d9bc47532d18794cdfe86085390a12f202",
+    "tests/test_scripts_sync.sh": "b9ac108f6a1b5870b61cbf62d21c7e3c881c80543681c7a301ced4f73c554aae",
+    "tests/test_shellcheck.sh": "76586a77e5943d998c1dc4fd5fc24024d124d01da8819701cf395cc4b6b339df",
+    "tests/test_skill_metadata_budget.sh": "1c2873ceefd3e4772977a335a8585c2fcb3b46f1e3aa76af21df6a3a94081af6",
+    "tests/test_sync_codex_skills.sh": "4cbc55b74df33b320bce7397838439e15561d2c814c836eba565c35e8f8548d2",
+    "tests/test_sync_memory.sh": "7e691e212d8128665fcc8893a2ebd19eb73daacd494ad2873d394fc92107c42f",
+    "tests/test_tidy_handoff.sh": "409c7afb217138bc273e8a42539f76d082b4d7c4ba8da389abe80c4280189be6",
+    "tests/test_validate_handoff.sh": "36aab1cb5285d3c7172947a8e96c56b7a803f1fba9da08ce4629e8f779ed9074"
+  },
+  "post_documentation_checks": {
+    "doc_freshness": {
+      "passed": 28,
+      "failed": 0
+    },
+    "scripts_sync": {
+      "passed": 22,
+      "failed": 0
+    },
+    "no_legacy_templates": {
+      "passed": 11,
+      "failed": 0
+    },
+    "legacy_names_guard": {
+      "passed": 64,
+      "failed": 0
+    },
+    "skill_quick_validate": {
+      "exit_code": 0
+    },
+    "git_diff_check": {
+      "exit_code": 0
+    }
+  }
+}
