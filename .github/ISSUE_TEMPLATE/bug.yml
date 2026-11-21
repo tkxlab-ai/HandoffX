@@ -1,0 +1,73 @@
+name: Bug report
+description: Report a reproducible problem with HandoffX Plugin
+title: "[Bug] "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to file a bug report. Please fill out the fields below — incomplete reports may be closed without action.
+
+        **Security issues**: do NOT use this form. Use [private security advisories](https://github.com/tkxlab-ai/HandoffX/security/advisories/new) instead.
+
+  - type: input
+    id: version
+    attributes:
+      label: HandoffX version
+      description: Output of `cat VERSION` or the .skill filename you installed
+      placeholder: v2.2.0
+    validations:
+      required: true
+
+  - type: dropdown
+    id: cli
+    attributes:
+      label: CLI / Tool
+      description: Which CLI are you using HandoffX in?
+      options:
+        - Claude Code
+        - OpenCode
+        - Codex
+        - Other
+    validations:
+      required: true
+
+  - type: input
+    id: os
+    attributes:
+      label: OS / Shell
+      placeholder: macOS 14.5 / bash 5.2 (or Ubuntu 22.04 / mawk)
+    validations:
+      required: true
+
+  - type: textarea
+    id: repro
+    attributes:
+      label: Reproduction steps
+      description: Minimal commands to reproduce. Include exact slash command, file states, expected vs actual.
+      placeholder: |
+        1. `./install.sh /path/to/test-project`
+        2. `cd /path/to/test-project && /handoffx`
+        3. Observed: ...
+        4. Expected: ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Relevant logs / output
+      render: shell
+      description: Paste the full error output. Redact any secrets first.
+
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Pre-submission checks
+      options:
+        - label: I checked GOTCHAS.md for known issues
+          required: true
+        - label: I redacted secrets and personal paths
+          required: true
+        - label: I am using a supported version (2.x)
+          required: true
