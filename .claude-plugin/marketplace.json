@@ -1,0 +1,17 @@
+{
+  "name": "tkx-handoffx",
+  "owner": {
+    "name": "TKXLAB.AI"
+  },
+  "plugins": [
+    {
+      "name": "handoffx",
+      "source": "./",
+      "description": "Project-level handoff for AI coding tools: a Markdown project state that any person, session or CLI can pick up from.",
+      "version": "4.5.0",
+      "homepage": "https://github.com/tkxlab-ai/HandoffX",
+      "license": "MIT"
+    }
+  ],
+  "version": "4.5.0"
+}

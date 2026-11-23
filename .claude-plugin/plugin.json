@@ -1,0 +1,24 @@
+{
+  "name": "handoffx",
+  "displayName": "HandoffX",
+  "version": "4.5.0",
+  "description": "Project-level handoff for AI coding tools: a Markdown project state that any person, session or CLI can pick up from.",
+  "author": {
+    "name": "TKXLAB.AI"
+  },
+  "repository": "https://github.com/tkxlab-ai/HandoffX",
+  "homepage": "https://github.com/tkxlab-ai/HandoffX",
+  "license": "MIT",
+  "keywords": [
+    "handoff",
+    "context",
+    "project-state",
+    "documentation"
+  ],
+  "skills": [
+    "./skills/handoffx"
+  ],
+  "commands": [
+    "./commands"
+  ]
+}
