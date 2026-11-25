@@ -1,0 +1,169 @@
+{
+  "date": "2026-11-14",
+  "baseline_commit": "e4b5794c91f90f1a5459140c7bdf3d6b2aeb96c9",
+  "version": "4.2.1",
+  "released": false,
+  "tests": {
+    "suites": 40,
+    "passed_assertions": 3624,
+    "failed_assertions": 0,
+    "static_assertion_sites": 2346,
+    "skipped": 0,
+    "bash": "3.2.57",
+    "platform": "macOS",
+    "exit_code": 0
+  },
+  "test_log_sha256": "3b6cb361e432fb59f6a79dda8fc5fb1575b96d0cace5c20d9f302246592995a6",
+  "performance": {
+    "dataset": {
+      "active_dev_logs": 89,
+      "decisions": 35
+    },
+    "method": "Temporary project copies; baseline scripts from git HEAD; 3 sequential runs per tool/version; medians; no maintenance on real project",
+    "samples": [
+      {
+        "version": "before",
+        "tool": "handoff-lint.sh",
+        "seconds": [
+          4.178,
+          3.914,
+          3.896
+        ],
+        "median": 3.914,
+        "exit_codes": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "version": "before",
+        "tool": "handoff-postflight.sh",
+        "seconds": [
+          4.935,
+          4.963,
+          4.986
+        ],
+        "median": 4.963,
+        "exit_codes": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "version": "after",
+        "tool": "handoff-lint.sh",
+        "seconds": [
+          0.571,
+          0.596,
+          0.576
+        ],
+        "median": 0.576,
+        "exit_codes": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "version": "after",
+        "tool": "handoff-postflight.sh",
+        "seconds": [
+          1.202,
+          1.19,
+          1.206
+        ],
+        "median": 1.202,
+        "exit_codes": [
+          0,
+          0,
+          0
+        ]
+      }
+    ]
+  },
+  "installed": {
+    "Claude Code": {
+      "path": "~/.claude/skills/handoffx",
+      "files_matched": 47,
+      "source_equal": true
+    },
+    "OpenCode": {
+      "path": "~/.config/opencode/skills/handoffx",
+      "files_matched": 47,
+      "source_equal": true
+    },
+    "Codex": {
+      "path": "~/.agents/skills/handoffx",
+      "files_matched": 47,
+      "source_equal": true
+    },
+    "~/.claude/commands/handoffx-recall.md": {
+      "characters": 178,
+      "source_equal": true
+    },
+    "~/.config/opencode/commands/handoffx.md": {
+      "characters": 181,
+      "source_equal": true
+    },
+    "~/.config/opencode/commands/handoffx-recall.md": {
+      "characters": 178,
+      "source_equal": true
+    },
+    "Codex recall alias": {
+      "characters": 185,
+      "reference_routing": true
+    }
+  },
+  "rollback_backup": "~/.handoffx-install/bak.20261114162915.57147",
+  "recall_smoke": {
+    "user_reply": "已读状态、坑点及最近6条。记录截至2026-04-15：v2.3.1，Beta；单测通过，支付回调集成测试仍不稳定。Redis泄漏已修复并通过本地及预发验证，但未部署生产。下一步先安排生产部署并观察连接数，再修支付回调测试、补退款幂等key、做10k rps Redis热点压测。当前实际进度需确认，文档不能证明已GA。",
+    "unicode_characters": 160,
+    "fixture_files_unchanged": 10,
+    "source_skill_and_fixture_files_unchanged": 13,
+    "full_eval_suite_run": false,
+    "scope_note": "Only sampled files and isolated fixture checked; parent concurrently edited the implementation report."
+  },
+  "additional_opencode_review": {
+    "runs": [
+      {
+        "model": "tkx/glm-5.3",
+        "exit_code": 143,
+        "elapsed_seconds": 300.884,
+        "timed_out": true,
+        "event_types": [
+          "step_start"
+        ],
+        "model_text_returned": false,
+        "stderr_bytes": 0,
+        "reproducible_findings": null,
+        "conclusion": "incomplete: no model review returned; not a pass"
+      },
+      {
+        "model": "tkx/deepseek-v4-pro",
+        "exit_code": 143,
+        "elapsed_seconds": 301.033,
+        "timed_out": true,
+        "event_types": [
+          "step_start"
+        ],
+        "model_text_returned": false,
+        "stderr_bytes": 0,
+        "reproducible_findings": null,
+        "conclusion": "incomplete: no model review returned; not a pass"
+      }
+    ],
+    "reviewed_files_changed_since_snapshot": [],
+    "shared_tests_run": false,
+    "os_isolated": false,
+    "retry_performed": false
+  },
+  "linux_container": {
+    "executed": false,
+    "reason": "Docker daemon unavailable"
+  },
+  "ci_remote_executed": false,
+  "skill_validator": "Passed in isolated uv environment with PyYAML; no project/runtime dependency added",
+  "gitnexus": "No indexed repositories; source search and tests used; no exact impact-graph claim"
+}
